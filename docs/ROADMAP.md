@@ -23,15 +23,15 @@ Roadmap is milestone-based. Do not begin later milestones by building UI placeho
 **Exit:** Accurate, labelled metrics on declared supported platforms. [PASSED]
 
 ## M2 — Safe cleanup MVP
-- [ ] Cleanup target registry.
-- [ ] Conservative temp-file discovery.
-- [ ] Candidate validation and path containment.
-- [ ] Preview model.
-- [ ] User confirmation.
-- [ ] Safe deletion and partial-result reporting.
-- [ ] Cancellation and audit history.
+- [x] Cleanup target registry.
+- [x] Conservative temp-file discovery.
+- [x] Candidate validation and path containment.
+- [x] Preview model.
+- [x] User confirmation.
+- [x] Safe deletion and partial-result reporting.
+- [x] Cancellation and audit history.
 
-**Exit:** Safety tests pass; no out-of-scope deletion possible in test suite.
+**Exit:** Safety tests pass; no out-of-scope deletion possible in test suite. [PASSED]
 
 ## M3 — GUI product foundation
 - [ ] Main window and navigation.

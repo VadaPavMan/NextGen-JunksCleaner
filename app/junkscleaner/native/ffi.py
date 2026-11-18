@@ -9,13 +9,22 @@ from pathlib import Path
 from .types import (
     JC_CURRENT_ABI_VERSION,
     CTypesCapabilities,
+    CTypesCleanupItem,
+    CTypesCleanupOptions,
+    CTypesCleanupReport,
+    CTypesScanOptions,
+    CTypesScanResult,
     CTypesSystemSnapshot,
     CTypesVersionInfo,
     JcArchitecture,
     JcCapabilities,
     JcCapabilityFlags,
+    JcCleanupItem,
+    JcCleanupReport,
     JcDiskInfo,
     JcOsFamily,
+    JcRiskLevel,
+    JcScanResult,
     JcSnapshotValidityFlags,
     JcStatus,
     JcSystemSnapshot,
@@ -107,6 +116,24 @@ class NativeCore:
         self._jc_get_system_snapshot = self._lib.jc_get_system_snapshot
         self._jc_get_system_snapshot.argtypes = [ctypes.POINTER(CTypesSystemSnapshot)]
         self._jc_get_system_snapshot.restype = ctypes.c_int
+
+        self._jc_scan_cleanup_targets = self._lib.jc_scan_cleanup_targets
+        self._jc_scan_cleanup_targets.argtypes = [
+            ctypes.POINTER(CTypesScanOptions),
+            ctypes.POINTER(ctypes.POINTER(CTypesScanResult)),
+        ]
+        self._jc_scan_cleanup_targets.restype = ctypes.c_int
+
+        self._jc_free_scan_result = self._lib.jc_free_scan_result
+        self._jc_free_scan_result.argtypes = [ctypes.POINTER(CTypesScanResult)]
+        self._jc_free_scan_result.restype = None
+
+        self._jc_execute_cleanup = self._lib.jc_execute_cleanup
+        self._jc_execute_cleanup.argtypes = [
+            ctypes.POINTER(CTypesCleanupOptions),
+            ctypes.POINTER(CTypesCleanupReport),
+        ]
+        self._jc_execute_cleanup.restype = ctypes.c_int
 
         self._jc_status_to_string = self._lib.jc_status_to_string
         self._jc_status_to_string.argtypes = [ctypes.c_int]
@@ -218,6 +245,102 @@ class NativeCore:
             process_count=snap.process_count,
             thread_count=snap.thread_count,
             disks=disks,
+        )
+
+    def scan_cleanup_targets(
+        self,
+        custom_root_override: str | None = None,
+        min_age_seconds: int = 0,
+        max_depth: int = 5,
+    ) -> JcScanResult:
+        """Scan allow-listed cleanup targets to discover disposable candidate files."""
+        opts = CTypesScanOptions()
+        opts.struct_size = ctypes.sizeof(CTypesScanOptions)
+        opts.abi_version = JC_CURRENT_ABI_VERSION
+        opts.custom_root_override = (
+            custom_root_override.encode("utf-8") if custom_root_override else None
+        )
+        opts.min_age_seconds = min_age_seconds
+        opts.max_depth = max_depth
+
+        res_ptr = ctypes.POINTER(CTypesScanResult)()
+        ret = self._jc_scan_cleanup_targets(ctypes.byref(opts), ctypes.byref(res_ptr))
+        status = JcStatus(ret)
+        if status != JcStatus.OK:
+            raise JcNativeError(status, self.get_status_message(status))
+
+        try:
+            res = res_ptr.contents
+            items: list[JcCleanupItem] = []
+            for i in range(res.item_count):
+                c_item = res.items[i]
+                items.append(
+                    JcCleanupItem(
+                        target_id=c_item.target_id.decode("utf-8", errors="replace"),
+                        relative_path=c_item.relative_path.decode("utf-8", errors="replace"),
+                        display_path=c_item.display_path.decode("utf-8", errors="replace"),
+                        size_bytes=c_item.size_bytes,
+                        last_modified_ms=c_item.last_modified_ms,
+                        risk_level=JcRiskLevel(c_item.risk_level),
+                        is_locked=bool(c_item.is_locked),
+                    )
+                )
+
+            return JcScanResult(
+                total_candidates_count=res.total_candidates_count,
+                total_estimated_bytes=res.total_estimated_bytes,
+                items=items,
+            )
+        finally:
+            self._jc_free_scan_result(res_ptr)
+
+    def execute_cleanup(
+        self,
+        items: list[JcCleanupItem],
+        custom_root_override: str | None = None,
+        is_dry_run: bool = False,
+        cancel_token: ctypes.c_int32 | None = None,
+    ) -> JcCleanupReport:
+        """Execute cleanup deletion of user-approved candidate items."""
+        opts = CTypesCleanupOptions()
+        opts.struct_size = ctypes.sizeof(CTypesCleanupOptions)
+        opts.abi_version = JC_CURRENT_ABI_VERSION
+        opts.custom_root_override = (
+            custom_root_override.encode("utf-8") if custom_root_override else None
+        )
+        opts.item_count = len(items)
+        opts.is_dry_run = 1 if is_dry_run else 0
+        opts.cancel_token = ctypes.pointer(cancel_token) if cancel_token is not None else None
+
+        c_items_array = (CTypesCleanupItem * len(items))()
+        for i, item in enumerate(items):
+            c_items_array[i].target_id = item.target_id.encode("utf-8")[:31]
+            c_items_array[i].relative_path = item.relative_path.encode("utf-8")[:259]
+            c_items_array[i].display_path = item.display_path.encode("utf-8")[:259]
+            c_items_array[i].size_bytes = item.size_bytes
+            c_items_array[i].last_modified_ms = item.last_modified_ms
+            c_items_array[i].risk_level = item.risk_level.value
+            c_items_array[i].is_locked = 1 if item.is_locked else 0
+
+        opts.items = ctypes.cast(c_items_array, ctypes.POINTER(CTypesCleanupItem))
+
+        report = CTypesCleanupReport()
+        report.struct_size = ctypes.sizeof(CTypesCleanupReport)
+        report.abi_version = JC_CURRENT_ABI_VERSION
+
+        ret = self._jc_execute_cleanup(ctypes.byref(opts), ctypes.byref(report))
+        status = JcStatus(ret)
+        if status not in (JcStatus.OK, JcStatus.ERROR_PARTIAL_SUCCESS, JcStatus.ERROR_CANCELLED):
+            raise JcNativeError(status, self.get_status_message(status))
+
+        return JcCleanupReport(
+            duration_ms=report.duration_ms,
+            selected_count=report.selected_count,
+            deleted_count=report.deleted_count,
+            skipped_count=report.skipped_count,
+            failed_count=report.failed_count,
+            actual_bytes_deleted=report.actual_bytes_deleted,
+            was_cancelled=bool(report.was_cancelled),
         )
 
 

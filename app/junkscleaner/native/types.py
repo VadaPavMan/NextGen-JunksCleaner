@@ -132,6 +132,77 @@ class CTypesSystemSnapshot(ctypes.Structure):
     ]
 
 
+class CTypesCleanupItem(ctypes.Structure):
+    """Internal ctypes structure for jc_cleanup_item_t."""
+
+    _fields_ = [
+        ("target_id", ctypes.c_char * 32),
+        ("relative_path", ctypes.c_char * 260),
+        ("display_path", ctypes.c_char * 260),
+        ("size_bytes", ctypes.c_uint64),
+        ("last_modified_ms", ctypes.c_uint64),
+        ("risk_level", ctypes.c_uint32),
+        ("is_locked", ctypes.c_uint32),
+    ]
+
+
+class CTypesScanOptions(ctypes.Structure):
+    """Internal ctypes structure for jc_scan_options_t."""
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("custom_root_override", ctypes.c_char_p),
+        ("min_age_seconds", ctypes.c_uint32),
+        ("max_depth", ctypes.c_uint32),
+    ]
+
+
+class CTypesScanResult(ctypes.Structure):
+    """Internal ctypes structure for jc_scan_result_t."""
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("total_candidates_count", ctypes.c_uint64),
+        ("total_estimated_bytes", ctypes.c_uint64),
+        ("item_count", ctypes.c_uint32),
+        ("reserved", ctypes.c_uint32),
+        ("items", ctypes.POINTER(CTypesCleanupItem)),
+    ]
+
+
+class CTypesCleanupOptions(ctypes.Structure):
+    """Internal ctypes structure for jc_cleanup_options_t."""
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("custom_root_override", ctypes.c_char_p),
+        ("item_count", ctypes.c_uint32),
+        ("is_dry_run", ctypes.c_uint32),
+        ("items", ctypes.POINTER(CTypesCleanupItem)),
+        ("cancel_token", ctypes.POINTER(ctypes.c_int32)),
+    ]
+
+
+class CTypesCleanupReport(ctypes.Structure):
+    """Internal ctypes structure for jc_cleanup_report_t."""
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("duration_ms", ctypes.c_uint64),
+        ("selected_count", ctypes.c_uint64),
+        ("deleted_count", ctypes.c_uint64),
+        ("skipped_count", ctypes.c_uint64),
+        ("failed_count", ctypes.c_uint64),
+        ("actual_bytes_deleted", ctypes.c_uint64),
+        ("was_cancelled", ctypes.c_uint32),
+        ("reserved", ctypes.c_uint32),
+    ]
+
+
 class CTypesVersionInfo(ctypes.Structure):
     """Internal ctypes structure for jc_version_info_t."""
 
@@ -281,3 +352,58 @@ class JcSystemSnapshot:
         if self.is_valid(JcSnapshotValidityFlags.MEM_CACHED):
             return format_bytes(self.memory_cached_bytes)
         return "N/A"
+
+
+class JcRiskLevel(IntEnum):
+    """Cleanup risk classifications matching jc_risk_level_t."""
+
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+
+
+@dataclass(frozen=True)
+class JcCleanupItem:
+    """Discovered disposable cleanup item metadata."""
+
+    target_id: str
+    relative_path: str
+    display_path: str
+    size_bytes: int
+    last_modified_ms: int
+    risk_level: JcRiskLevel
+    is_locked: bool
+
+    @property
+    def size_display(self) -> str:
+        return format_bytes(self.size_bytes)
+
+
+@dataclass(frozen=True)
+class JcScanResult:
+    """Discovered candidate items and aggregated metadata."""
+
+    total_candidates_count: int
+    total_estimated_bytes: int
+    items: list[JcCleanupItem]
+
+    @property
+    def total_estimated_display(self) -> str:
+        return format_bytes(self.total_estimated_bytes)
+
+
+@dataclass(frozen=True)
+class JcCleanupReport:
+    """Report detailing actual deleted files and bytes freed."""
+
+    duration_ms: int
+    selected_count: int
+    deleted_count: int
+    skipped_count: int
+    failed_count: int
+    actual_bytes_deleted: int
+    was_cancelled: bool
+
+    @property
+    def actual_deleted_display(self) -> str:
+        return format_bytes(self.actual_bytes_deleted)

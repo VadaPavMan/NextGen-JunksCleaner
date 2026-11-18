@@ -3,7 +3,11 @@
 from .ffi import NativeCore, get_native_core
 from .types import (
     JcCapabilities,
+    JcCleanupItem,
+    JcCleanupReport,
     JcDiskInfo,
+    JcRiskLevel,
+    JcScanResult,
     JcSnapshotValidityFlags,
     JcStatus,
     JcSystemSnapshot,
@@ -12,7 +16,11 @@ from .types import (
 
 __all__ = [
     "JcCapabilities",
+    "JcCleanupItem",
+    "JcCleanupReport",
     "JcDiskInfo",
+    "JcRiskLevel",
+    "JcScanResult",
     "JcSnapshotValidityFlags",
     "JcStatus",
     "JcSystemSnapshot",

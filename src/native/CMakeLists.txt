@@ -2,6 +2,9 @@ add_library(junkscleaner_native SHARED
     core/version.cpp
     core/status.cpp
     core/snapshot.cpp
+    core/path_safety.cpp
+    core/cleanup_engine.cpp
+    core/cleanup_api.cpp
 )
 
 target_include_directories(junkscleaner_native

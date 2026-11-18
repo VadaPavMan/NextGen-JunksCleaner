@@ -150,6 +150,81 @@ typedef struct jc_system_snapshot_s {
     jc_disk_info_t disks[JC_MAX_SNAPSHOT_DISKS];
 } jc_system_snapshot_t;
 
+/**
+ * Cleanup target risk classification.
+ */
+typedef enum jc_risk_level_e {
+    JC_RISK_LOW       = 1,   /* Disposable temp files with zero user state */
+    JC_RISK_MEDIUM    = 2,   /* App caches with known regeneration semantics */
+    JC_RISK_HIGH      = 3    /* Potentially sensitive or requires app restart */
+} jc_risk_level_t;
+
+/**
+ * Cleanup candidate item metadata.
+ */
+typedef struct jc_cleanup_item_s {
+    char target_id[32];          /* Target identifier (e.g. "user_temp") */
+    char relative_path[260];     /* Path relative to target root */
+    char display_path[260];      /* Safe display representation */
+    uint64_t size_bytes;         /* File size in bytes */
+    uint64_t last_modified_ms;   /* Modification time in epoch ms */
+    uint32_t risk_level;         /* jc_risk_level_t */
+    uint32_t is_locked;          /* 1 if locked or inaccessible, 0 otherwise */
+} jc_cleanup_item_t;
+
+/**
+ * Scan request parameters.
+ */
+typedef struct jc_scan_options_s {
+    uint32_t struct_size;              /* sizeof(jc_scan_options_t) */
+    uint32_t abi_version;              /* JC_CURRENT_ABI_VERSION */
+    const char* custom_root_override;  /* Override root for safety testing; NULL for OS default */
+    uint32_t min_age_seconds;          /* Minimum file age in seconds; 0 for all */
+    uint32_t max_depth;                /* Maximum traversal directory depth (default: 5) */
+} jc_scan_options_t;
+
+/**
+ * Complete scan result container.
+ */
+typedef struct jc_scan_result_s {
+    uint32_t struct_size;              /* sizeof(jc_scan_result_t) */
+    uint32_t abi_version;              /* JC_CURRENT_ABI_VERSION */
+    uint64_t total_candidates_count;   /* Count of discovered candidate files */
+    uint64_t total_estimated_bytes;    /* Sum of candidate file sizes */
+    uint32_t item_count;               /* Number of items in items array */
+    uint32_t reserved;                 /* Alignment */
+    jc_cleanup_item_t* items;          /* Dynamically allocated array of items */
+} jc_scan_result_t;
+
+/**
+ * Cleanup execution parameters.
+ */
+typedef struct jc_cleanup_options_s {
+    uint32_t struct_size;              /* sizeof(jc_cleanup_options_t) */
+    uint32_t abi_version;              /* JC_CURRENT_ABI_VERSION */
+    const char* custom_root_override;  /* Must match approved target root */
+    uint32_t item_count;               /* Number of items selected for deletion */
+    uint32_t is_dry_run;               /* 1 = simulate without deletion, 0 = delete */
+    const jc_cleanup_item_t* items;    /* Items selected by user to delete */
+    const volatile int32_t* cancel_token; /* Cooperative cancellation flag pointer; NULL if none */
+} jc_cleanup_options_t;
+
+/**
+ * Cleanup execution report.
+ */
+typedef struct jc_cleanup_report_s {
+    uint32_t struct_size;              /* sizeof(jc_cleanup_report_t) */
+    uint32_t abi_version;              /* JC_CURRENT_ABI_VERSION */
+    uint64_t duration_ms;              /* Elapsed execution time in milliseconds */
+    uint64_t selected_count;           /* Total items requested */
+    uint64_t deleted_count;            /* Successfully removed items */
+    uint64_t skipped_count;            /* Skipped (e.g. locked, changed, symlinks) */
+    uint64_t failed_count;             /* Attempted but failed with I/O error */
+    uint64_t actual_bytes_deleted;     /* Total bytes actually freed from disk */
+    uint32_t was_cancelled;            /* 1 if terminated early by cancellation token */
+    uint32_t reserved;                 /* Alignment */
+} jc_cleanup_report_t;
+
 #ifdef __cplusplus
 }
 #endif
