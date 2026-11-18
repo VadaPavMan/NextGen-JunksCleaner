@@ -1,6 +1,13 @@
 """Application entry point for JunksCleaner."""
 
+# ruff: noqa: E402
 import sys
+from pathlib import Path
+
+# Ensure package directory is in sys.path when invoked directly as a script
+_package_root = str(Path(__file__).resolve().parents[1])
+if _package_root not in sys.path:
+    sys.path.insert(0, _package_root)
 
 from PySide6.QtWidgets import QApplication
 
