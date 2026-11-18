@@ -1,0 +1,48 @@
+# Git ignore for JunksCleaner
+
+# Reference repositories (external inspection only)
+JunksCleaner-v2.0/
+Junks-Cleaner-CLI/
+references/
+
+# Python virtual environment and caches
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Python test and lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# CMake & Native build artifacts
+CMakeUserPresets.json
+out/
+bin/
+lib/
+*.obj
+*.o
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.exp
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

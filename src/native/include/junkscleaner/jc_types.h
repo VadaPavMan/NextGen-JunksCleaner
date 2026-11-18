@@ -1,0 +1,157 @@
+#ifndef JUNKS_CLEANER_JC_TYPES_H
+#define JUNKS_CLEANER_JC_TYPES_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Status and error codes returned across the C ABI boundary.
+ */
+typedef enum jc_status_e {
+    JC_OK                       = 0,
+    JC_ERROR_INVALID_ARGUMENT   = 1,
+    JC_ERROR_UNSUPPORTED        = 2,
+    JC_ERROR_PERMISSION_DENIED  = 3,
+    JC_ERROR_CANCELLED          = 4,
+    JC_ERROR_PARTIAL_SUCCESS    = 5,
+    JC_ERROR_IO_ERROR           = 6,
+    JC_ERROR_INTERNAL           = 7,
+    JC_ERROR_ABI_MISMATCH       = 8,
+    JC_ERROR_BUFFER_TOO_SMALL   = 9
+} jc_status_t;
+
+/**
+ * Operating system family identifier.
+ */
+typedef enum jc_os_family_e {
+    JC_OS_UNKNOWN = 0,
+    JC_OS_WINDOWS = 1,
+    JC_OS_LINUX   = 2
+} jc_os_family_t;
+
+/**
+ * Target CPU architecture.
+ */
+typedef enum jc_architecture_e {
+    JC_ARCH_UNKNOWN = 0,
+    JC_ARCH_X86_64  = 1,
+    JC_ARCH_AARCH64 = 2,
+    JC_ARCH_X86     = 3
+} jc_architecture_t;
+
+/**
+ * Capability bitmask flags.
+ */
+typedef enum jc_capability_flags_e {
+    JC_CAP_NONE                 = 0,
+    JC_CAP_CPU_MONITORING       = (1ULL << 0),
+    JC_CAP_MEMORY_MONITORING    = (1ULL << 1),
+    JC_CAP_DISK_MONITORING      = (1ULL << 2),
+    JC_CAP_CLEANUP_TEMP_FILES   = (1ULL << 3),
+    JC_CAP_STORAGE_ANALYZER     = (1ULL << 4),
+    JC_CAP_PROCESS_MONITORING   = (1ULL << 5),
+    JC_CAP_STANDBY_LIST_OPS     = (1ULL << 6),
+    JC_CAP_DROP_CACHES_OPS      = (1ULL << 7)
+} jc_capability_flags_t;
+
+/**
+ * Version information payload.
+ */
+typedef struct jc_version_info_s {
+    uint32_t struct_size;    /* Must be sizeof(jc_version_info_t) */
+    uint32_t abi_version;    /* Must match JC_CURRENT_ABI_VERSION */
+    uint32_t major;
+    uint32_t minor;
+    uint32_t patch;
+    uint32_t reserved;       /* Alignment padding */
+} jc_version_info_t;
+
+/**
+ * System and platform capability report.
+ */
+typedef struct jc_capabilities_s {
+    uint32_t struct_size;            /* Must be sizeof(jc_capabilities_t) */
+    uint32_t abi_version;            /* Must match JC_CURRENT_ABI_VERSION */
+    uint32_t os_family;              /* jc_os_family_t */
+    uint32_t architecture;           /* jc_architecture_t */
+    uint64_t supported_capabilities; /* Bitmask of supported jc_capability_flags_t */
+    uint64_t elevated_capabilities;  /* Bitmask of capabilities requiring elevation */
+    char os_version_string[64];      /* Human-readable OS version name (null-terminated) */
+} jc_capabilities_t;
+
+/**
+ * Validity bitmask flags for system snapshot fields.
+ * Distinguishes between zero values and unavailable/unsupported metrics.
+ */
+typedef enum jc_snapshot_validity_flags_e {
+    JC_SNAPSHOT_VALID_NONE              = 0,
+    JC_SNAPSHOT_VALID_CPU_USAGE         = (1ULL << 0),
+    JC_SNAPSHOT_VALID_CPU_CORES         = (1ULL << 1),
+    JC_SNAPSHOT_VALID_MEM_TOTAL         = (1ULL << 2),
+    JC_SNAPSHOT_VALID_MEM_USED          = (1ULL << 3),
+    JC_SNAPSHOT_VALID_MEM_AVAILABLE     = (1ULL << 4),
+    JC_SNAPSHOT_VALID_MEM_CACHED        = (1ULL << 5),
+    JC_SNAPSHOT_VALID_MEM_COMMITTED     = (1ULL << 6),
+    JC_SNAPSHOT_VALID_MEM_COMMIT_LIMIT  = (1ULL << 7),
+    JC_SNAPSHOT_VALID_SWAP_TOTAL        = (1ULL << 8),
+    JC_SNAPSHOT_VALID_SWAP_USED         = (1ULL << 9),
+    JC_SNAPSHOT_VALID_PRIMARY_DISK      = (1ULL << 10),
+    JC_SNAPSHOT_VALID_PROCESS_COUNT     = (1ULL << 11),
+    JC_SNAPSHOT_VALID_THREAD_COUNT      = (1ULL << 12)
+} jc_snapshot_validity_flags_t;
+
+#define JC_MAX_SNAPSHOT_DISKS 8U
+
+/**
+ * Disk volume usage snapshot.
+ */
+typedef struct jc_disk_info_s {
+    char mount_point[32];       /* e.g. "C:\" on Windows or "/" on Linux */
+    uint64_t total_bytes;
+    uint64_t free_bytes;
+    uint64_t available_bytes;
+} jc_disk_info_t;
+
+/**
+ * Real-time system telemetry snapshot.
+ */
+typedef struct jc_system_snapshot_s {
+    uint32_t struct_size;              /* Must be sizeof(jc_system_snapshot_t) */
+    uint32_t abi_version;              /* Must match JC_CURRENT_ABI_VERSION */
+    uint64_t timestamp_ms;             /* Milliseconds since Unix epoch */
+    uint64_t validity_flags;           /* Bitmask of jc_snapshot_validity_flags_t */
+
+    /* CPU Metrics */
+    double cpu_usage_percent;          /* 0.0 to 100.0 */
+    uint32_t logical_cpu_cores;
+    uint32_t physical_cpu_cores;
+
+    /* Memory Metrics (bytes) */
+    uint64_t memory_total_bytes;
+    uint64_t memory_used_bytes;
+    uint64_t memory_available_bytes;
+    uint64_t memory_cached_bytes;
+    uint64_t memory_committed_bytes;
+    uint64_t memory_commit_limit_bytes;
+    uint64_t swap_total_bytes;
+    uint64_t swap_used_bytes;
+
+    /* Process/Thread counts (if exposed) */
+    uint32_t process_count;
+    uint32_t thread_count;
+
+    /* Primary Disk / Volumes */
+    uint32_t disk_count;
+    uint32_t reserved;                 /* Alignment padding */
+    jc_disk_info_t disks[JC_MAX_SNAPSHOT_DISKS];
+} jc_system_snapshot_t;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* JUNKS_CLEANER_JC_TYPES_H */
