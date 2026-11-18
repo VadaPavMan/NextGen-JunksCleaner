@@ -5,6 +5,16 @@ All notable changes to JunksCleaner will be documented here.
 The project is currently at the documentation/architecture baseline. No application feature should be listed as released until implemented and verified.
 
 ## Unreleased
+- Completed Milestone M3 (GUI product foundation):
+  - Integrated PySide6 GUI framework with high-DPI scaling and accessible layouts.
+  - Implemented `MainWindow` with clean sidebar navigation (`Dashboard`, `Junk Cleaner`, `Activity`, `Settings`).
+  - Implemented `DashboardPage` presenting live CPU, physical RAM, primary disk, and system environment telemetry cards with explicit unavailable-state indicators.
+  - Implemented `CleanerPage` providing interactive scan, preview table with individual item deselection, summary metrics, dry-run simulation, and confirmation modal.
+  - Implemented `ActivityPage` displaying local audit history trail of previous cleanup and simulation runs.
+  - Implemented `SettingsPage` with theme switcher (Dark / Light) and configurable telemetry polling intervals.
+  - Implemented persistent configuration manager `ConfigManager` with JSON file loading, saving, and corrupt file fallback.
+  - Implemented non-blocking background QThread workers `ScanWorker` and `CleanWorker` with cooperative cancellation.
+  - Added Pytest GUI test suite covering configuration persistence, theme styling, dashboard rendering, preview selection, and window lifecycle.
 - Completed Milestone M2 (Safe cleanup MVP):
   - Added C ABI types in `jc_types.h`: `jc_risk_level_t`, `jc_cleanup_item_t`, `jc_scan_options_t`, `jc_scan_result_t`, `jc_cleanup_options_t`, and `jc_cleanup_report_t`.
   - Exported C ABI functions in `jc_api.h`: `jc_scan_cleanup_targets`, `jc_free_scan_result`, and `jc_execute_cleanup`.

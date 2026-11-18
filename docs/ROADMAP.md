@@ -34,13 +34,13 @@ Roadmap is milestone-based. Do not begin later milestones by building UI placeho
 **Exit:** Safety tests pass; no out-of-scope deletion possible in test suite. [PASSED]
 
 ## M3 — GUI product foundation
-- [ ] Main window and navigation.
-- [ ] Dashboard, cleaner and activity pages.
-- [ ] Settings persistence.
-- [ ] Theme and accessibility pass.
-- [ ] Background workers and graceful shutdown.
+- [x] Main window and navigation.
+- [x] Dashboard, cleaner and activity pages.
+- [x] Settings persistence.
+- [x] Theme and accessibility pass.
+- [x] Background workers and graceful shutdown.
 
-**Exit:** Complete end-to-end scan/preview/clean flow on Windows and Linux.
+**Exit:** Complete end-to-end scan/preview/clean flow on Windows and Linux. [PASSED]
 
 ## M4 — Storage analyzer and process visibility
 - [ ] Volume overview.
