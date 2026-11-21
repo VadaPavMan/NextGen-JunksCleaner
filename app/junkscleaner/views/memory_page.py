@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -44,12 +45,12 @@ class MemoryPage(QWidget):
         # 1. Header with live privilege chip
         header_layout = QHBoxLayout()
         header_text = QVBoxLayout()
-        title = QLabel("⚡ Clean Memory")
-        title.setStyleSheet("font-size: 22px; font-weight: bold; letter-spacing: -0.4px;")
+        title = QLabel("Clean Memory")
+        title.setObjectName("PageTitle")
         subtitle = QLabel(
             "Safe RAM optimization & cache reclamation inspired by Mem Reduct and WinMemoryCleaner"
         )
-        subtitle.setStyleSheet("color: #71717a; font-size: 13px;")
+        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
         header_text.addWidget(title)
         header_text.addWidget(subtitle)
         header_layout.addLayout(header_text)
@@ -72,14 +73,12 @@ class MemoryPage(QWidget):
         header_layout.addWidget(elev_label)
         layout.addLayout(header_layout)
 
-        # 2. Live Memory Telemetry Card with accent border
+        # 2. Live Memory Telemetry Card
         self.telemetry_card = QFrame()
         self.telemetry_card.setObjectName("Card")
-        self.telemetry_card.setStyleSheet(
-            "QFrame#Card { border-top: 3px solid #10b981; }"
-        )
+        self.telemetry_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         telemetry_layout = QVBoxLayout(self.telemetry_card)
-        telemetry_layout.setContentsMargins(18, 18, 18, 18)
+        telemetry_layout.setContentsMargins(20, 18, 20, 18)
         telemetry_layout.setSpacing(12)
 
         card_title = QLabel("PHYSICAL RAM UTILIZATION")
@@ -94,7 +93,7 @@ class MemoryPage(QWidget):
         self.lbl_cached_ram = QLabel("Cache / Standby: --")
         self.lbl_cached_ram.setStyleSheet("font-size: 15px; font-weight: 600; color: #38bdf8;")
         self.lbl_total_ram = QLabel("Total: --")
-        self.lbl_total_ram.setStyleSheet("font-size: 15px; color: #64748b;")
+        self.lbl_total_ram.setStyleSheet("font-size: 15px; color: #888888;")
 
         stats_row.addWidget(self.lbl_used_ram)
         stats_row.addWidget(self.lbl_avail_ram)
@@ -107,7 +106,7 @@ class MemoryPage(QWidget):
         self.memory_progress.setRange(0, 100)
         self.memory_progress.setValue(0)
         self.memory_progress.setTextVisible(True)
-        self.memory_progress.setFixedHeight(14)
+        self.memory_progress.setFixedHeight(16)
         telemetry_layout.addWidget(self.memory_progress)
 
         layout.addWidget(self.telemetry_card)
@@ -115,8 +114,9 @@ class MemoryPage(QWidget):
         # 3. Operations Selection Card
         ops_card = QFrame()
         ops_card.setObjectName("Card")
+        ops_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         ops_layout = QVBoxLayout(ops_card)
-        ops_layout.setContentsMargins(18, 18, 18, 18)
+        ops_layout.setContentsMargins(20, 18, 20, 18)
         ops_layout.setSpacing(10)
 
         ops_title = QLabel("OPTIMIZATION TARGETS")
@@ -126,8 +126,10 @@ class MemoryPage(QWidget):
         # Target 1: Process Working Sets
         card_ws = QFrame()
         card_ws.setObjectName("OptionCard")
+        card_ws.setMinimumHeight(64)
+        card_ws.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         layout_ws = QVBoxLayout(card_ws)
-        layout_ws.setContentsMargins(12, 10, 12, 10)
+        layout_ws.setContentsMargins(14, 10, 14, 10)
         row_ws = QHBoxLayout()
         self.cb_working_sets = QCheckBox("Process Working Sets")
         self.cb_working_sets.setChecked(True)
@@ -144,15 +146,17 @@ class MemoryPage(QWidget):
         lbl_ws_desc = QLabel(
             "Trims unreferenced working set pages of running processes back to the memory manager."
         )
-        lbl_ws_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        lbl_ws_desc.setStyleSheet("color: #888888; font-size: 12px; margin-left: 28px;")
         layout_ws.addWidget(lbl_ws_desc)
         ops_layout.addWidget(card_ws)
 
         # Target 2: System File Cache
         card_sc = QFrame()
         card_sc.setObjectName("OptionCard")
+        card_sc.setMinimumHeight(64)
+        card_sc.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         layout_sc = QVBoxLayout(card_sc)
-        layout_sc.setContentsMargins(12, 10, 12, 10)
+        layout_sc.setContentsMargins(14, 10, 14, 10)
         row_sc = QHBoxLayout()
         self.cb_system_cache = QCheckBox("System File Cache")
         self.cb_system_cache.setChecked(self._is_elevated)
@@ -169,15 +173,17 @@ class MemoryPage(QWidget):
         lbl_sc_desc = QLabel(
             "Flushes the system working set and file system cache using SetSystemFileCacheSize."
         )
-        lbl_sc_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        lbl_sc_desc.setStyleSheet("color: #888888; font-size: 12px; margin-left: 28px;")
         layout_sc.addWidget(lbl_sc_desc)
         ops_layout.addWidget(card_sc)
 
         # Target 3: Standby Page List
         card_sb = QFrame()
         card_sb.setObjectName("OptionCard")
+        card_sb.setMinimumHeight(64)
+        card_sb.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         layout_sb = QVBoxLayout(card_sb)
-        layout_sb.setContentsMargins(12, 10, 12, 10)
+        layout_sb.setContentsMargins(14, 10, 14, 10)
         row_sb = QHBoxLayout()
         self.cb_standby_list = QCheckBox("Standby Page List")
         self.cb_standby_list.setChecked(self._is_elevated)
@@ -195,15 +201,17 @@ class MemoryPage(QWidget):
             "Purges cached standby pages into free memory. Note: Standby cache is already "
             "available when needed; purging may increase disk I/O on immediate file re-reads."
         )
-        lbl_sb_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        lbl_sb_desc.setStyleSheet("color: #888888; font-size: 12px; margin-left: 28px;")
         layout_sb.addWidget(lbl_sb_desc)
         ops_layout.addWidget(card_sb)
 
         # Target 4: Modified Page List
         card_mod = QFrame()
         card_mod.setObjectName("OptionCard")
+        card_mod.setMinimumHeight(64)
+        card_mod.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         layout_mod = QVBoxLayout(card_mod)
-        layout_mod.setContentsMargins(12, 10, 12, 10)
+        layout_mod.setContentsMargins(14, 10, 14, 10)
         row_mod = QHBoxLayout()
         self.cb_modified_list = QCheckBox("Modified Page List")
         self.cb_modified_list.setChecked(False)
@@ -220,7 +228,7 @@ class MemoryPage(QWidget):
         lbl_mod_desc = QLabel(
             "Flushes modified dirty pages to disk backing store or pagefile."
         )
-        lbl_mod_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        lbl_mod_desc.setStyleSheet("color: #888888; font-size: 12px; margin-left: 28px;")
         layout_mod.addWidget(lbl_mod_desc)
         ops_layout.addWidget(card_mod)
 
@@ -230,11 +238,11 @@ class MemoryPage(QWidget):
         action_layout = QHBoxLayout()
         self.btn_clean = QPushButton("⚡  Clean Selected Targets")
         self.btn_clean.setObjectName("PrimaryButton")
-        self.btn_clean.setFixedHeight(38)
+        self.btn_clean.setFixedHeight(40)
         self.btn_clean.clicked.connect(self._on_clean_clicked)
 
         self.status_label = QLabel("Select targets above and click Clean Selected Targets")
-        self.status_label.setStyleSheet("color: #71717a; font-size: 13px;")
+        self.status_label.setStyleSheet("color: #888888; font-size: 13px;")
 
         action_layout.addWidget(self.btn_clean)
         action_layout.addWidget(self.status_label)
@@ -244,17 +252,14 @@ class MemoryPage(QWidget):
         # 5. Results Card (initially hidden)
         self.result_card = QFrame()
         self.result_card.setObjectName("HeroCard")
-        self.result_card.setStyleSheet(
-            "QFrame#HeroCard { border: 1px solid #059669; "
-            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #064e3b, stop:1 #065f46); }"
-        )
+        self.result_card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.result_card.setVisible(False)
         result_layout = QVBoxLayout(self.result_card)
+        result_layout.setContentsMargins(18, 14, 18, 14)
+        result_layout.setSpacing(6)
 
         res_title = QLabel("OPTIMIZATION REPORT")
-        res_title.setStyleSheet(
-            "font-size: 11px; font-weight: 700; color: #a7f3d0; letter-spacing: 0.6px;"
-        )
+        res_title.setObjectName("CardTitle")
         result_layout.addWidget(res_title)
 
         res_metrics_row = QHBoxLayout()
@@ -263,9 +268,9 @@ class MemoryPage(QWidget):
             "font-size: 17px; font-weight: 800; color: #ffffff;"
         )
         self.res_before_after = QLabel("Before: -- | After: --")
-        self.res_before_after.setStyleSheet("font-size: 13px; color: #d1fae5; font-weight: 500;")
+        self.res_before_after.setStyleSheet("font-size: 13px; color: #d4d4d8; font-weight: 500;")
         self.res_processes = QLabel("Processes Trimmed: --")
-        self.res_processes.setStyleSheet("font-size: 13px; color: #d1fae5; font-weight: 500;")
+        self.res_processes.setStyleSheet("font-size: 13px; color: #d4d4d8; font-weight: 500;")
 
         res_metrics_row.addWidget(self.res_reclaimed_label)
         res_metrics_row.addWidget(self.res_before_after)

@@ -101,10 +101,10 @@ class DashboardPage(QWidget):
         header_layout = QHBoxLayout()
         header_text = QVBoxLayout()
         title = QLabel("System Dashboard")
-        title.setStyleSheet("font-size: 22px; font-weight: bold; letter-spacing: -0.4px;")
+        title.setObjectName("PageTitle")
         os_info = capabilities.os_version_string if capabilities else "Local System"
         subtitle = QLabel(f"Continuous real-time telemetry • {os_info}")
-        subtitle.setStyleSheet("color: #71717a; font-size: 13px;")
+        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
         header_text.addWidget(title)
         header_text.addWidget(subtitle)
         header_layout.addLayout(header_text)

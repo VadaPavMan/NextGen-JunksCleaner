@@ -3,6 +3,7 @@
 from junkscleaner.core.config import ConfigManager
 from junkscleaner.native.ffi import NativeCore
 from junkscleaner.native.types import JcSystemSnapshot
+from junkscleaner.resources.assets import get_asset_path
 from junkscleaner.resources.theme import get_stylesheet
 from junkscleaner.services.cleaner import JunkCleanerService
 from junkscleaner.services.memory import MemoryCleanerService
@@ -12,8 +13,8 @@ from junkscleaner.views.cleaner_page import CleanerPage
 from junkscleaner.views.dashboard_page import DashboardPage
 from junkscleaner.views.memory_page import MemoryPage
 from junkscleaner.views.settings_page import SettingsPage
-from PySide6.QtCore import QObject, Signal, Slot
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
+from PySide6.QtGui import QCloseEvent, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QButtonGroup,
     QFrame,
@@ -21,6 +22,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QMainWindow,
     QPushButton,
+    QScrollArea,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -53,8 +55,9 @@ class MainWindow(QMainWindow):
         self.memory_service = memory_service or MemoryCleanerService(native_core=self.native_core)
 
         self.setWindowTitle("JunksCleaner - NextGen System Utility")
-        self.resize(1050, 680)
-        self.setMinimumSize(850, 520)
+        self.setWindowIcon(QIcon(get_asset_path("appicon.png")))
+        self.resize(1100, 720)
+        self.setMinimumSize(880, 560)
 
         # Bridge for thread-safe telemetry updates
         self.bridge = MonitorBridge()
@@ -68,6 +71,17 @@ class MainWindow(QMainWindow):
         self.monitor_service.subscribe(self._on_monitor_snapshot)
         self.monitor_service.start()
 
+    @staticmethod
+    def _wrap_scroll(widget: QWidget) -> QScrollArea:
+        """Wrap view page in responsive scroll container to support any window size."""
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setWidget(widget)
+        return scroll
+
     def _setup_ui(self) -> None:
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -79,35 +93,51 @@ class MainWindow(QMainWindow):
         # 1. Sidebar Frame
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        sidebar.setFixedWidth(220)
+        sidebar.setFixedWidth(230)
         sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(12, 16, 12, 16)
-        sidebar_layout.setSpacing(8)
+        sidebar_layout.setContentsMargins(14, 18, 14, 18)
+        sidebar_layout.setSpacing(10)
 
-        # Logo / Brand Box
+        # Logo / Brand Box with appicon.png
         brand_frame = QFrame()
-        brand_layout = QVBoxLayout(brand_frame)
-        brand_layout.setContentsMargins(4, 2, 4, 8)
-        brand_layout.setSpacing(2)
+        brand_layout = QHBoxLayout(brand_frame)
+        brand_layout.setContentsMargins(4, 2, 4, 12)
+        brand_layout.setSpacing(10)
 
-        title_label = QLabel("⚡ JunksCleaner")
+        logo_label = QLabel()
+        app_icon_pixmap = QPixmap(get_asset_path("appicon.png"))
+        if not app_icon_pixmap.isNull():
+            logo_label.setPixmap(
+                app_icon_pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            )
+        logo_label.setFixedSize(32, 32)
+
+        brand_text_layout = QVBoxLayout()
+        brand_text_layout.setSpacing(2)
+        brand_text_layout.setContentsMargins(0, 0, 0, 0)
+
+        title_label = QLabel("JunksCleaner")
         title_label.setObjectName("AppTitle")
         subtitle_label = QLabel("NextGen Desktop Utility")
         subtitle_label.setObjectName("SidebarSubtitle")
 
-        brand_layout.addWidget(title_label)
-        brand_layout.addWidget(subtitle_label)
+        brand_text_layout.addWidget(title_label)
+        brand_text_layout.addWidget(subtitle_label)
+
+        brand_layout.addWidget(logo_label)
+        brand_layout.addLayout(brand_text_layout)
+        brand_layout.addStretch()
         sidebar_layout.addWidget(brand_frame)
 
         # Nav button group
         self.nav_group = QButtonGroup(self)
         self.nav_group.setExclusive(True)
 
-        self.btn_dashboard = self._create_nav_button("📊  Dashboard", 0)
-        self.btn_cleaner = self._create_nav_button("🧹  Junk Cleaner", 1)
-        self.btn_memory = self._create_nav_button("⚡  Clean Memory", 2)
-        self.btn_activity = self._create_nav_button("📋  Activity Log", 3)
-        self.btn_settings = self._create_nav_button("⚙️  Settings", 4)
+        self.btn_dashboard = self._create_nav_button("Dashboard", "dashboard.png", 0)
+        self.btn_cleaner = self._create_nav_button("Junk Cleaner", "clean.png", 1)
+        self.btn_memory = self._create_nav_button("Clean Memory", "ram.png", 2)
+        self.btn_activity = self._create_nav_button("Activity Log", "activitylog.png", 3)
+        self.btn_settings = self._create_nav_button("Settings", "settings.png", 4)
 
         sidebar_layout.addWidget(self.btn_dashboard)
         sidebar_layout.addWidget(self.btn_cleaner)
@@ -121,13 +151,13 @@ class MainWindow(QMainWindow):
         status_box = QFrame()
         status_box.setObjectName("OptionCard")
         status_box_layout = QVBoxLayout(status_box)
-        status_box_layout.setContentsMargins(10, 8, 10, 8)
-        status_box_layout.setSpacing(2)
+        status_box_layout.setContentsMargins(12, 10, 12, 10)
+        status_box_layout.setSpacing(3)
 
         status_dot = QLabel("● Native Core Active")
         status_dot.setStyleSheet("color: #10b981; font-weight: 700; font-size: 11px;")
         arch_label = QLabel("C ABI Engine • v1.0.0")
-        arch_label.setStyleSheet("color: #64748b; font-size: 11px;")
+        arch_label.setStyleSheet("color: #888888; font-size: 11px;")
 
         status_box_layout.addWidget(status_dot)
         status_box_layout.addWidget(arch_label)
@@ -157,20 +187,23 @@ class MainWindow(QMainWindow):
         self.memory_page.memory_cleaned.connect(lambda _: self.activity_page.refresh())
         self.settings_page.theme_changed.connect(self._apply_theme)
 
-        self.stack.addWidget(self.dashboard_page)
-        self.stack.addWidget(self.cleaner_page)
-        self.stack.addWidget(self.memory_page)
-        self.stack.addWidget(self.activity_page)
-        self.stack.addWidget(self.settings_page)
+        self.stack.addWidget(self._wrap_scroll(self.dashboard_page))
+        self.stack.addWidget(self._wrap_scroll(self.cleaner_page))
+        self.stack.addWidget(self._wrap_scroll(self.memory_page))
+        self.stack.addWidget(self._wrap_scroll(self.activity_page))
+        self.stack.addWidget(self._wrap_scroll(self.settings_page))
 
         main_layout.addWidget(self.stack)
 
         self.btn_dashboard.setChecked(True)
 
-    def _create_nav_button(self, label: str, index: int) -> QPushButton:
-        btn = QPushButton(label)
+    def _create_nav_button(self, label: str, icon_filename: str, index: int) -> QPushButton:
+        btn = QPushButton(f"  {label}")
         btn.setObjectName("NavButton")
         btn.setCheckable(True)
+        icon_path = get_asset_path(icon_filename)
+        btn.setIcon(QIcon(icon_path))
+        btn.setIconSize(QSize(20, 20))
         btn.clicked.connect(lambda: self.stack.setCurrentIndex(index))
         self.nav_group.addButton(btn, index)
         return btn

@@ -34,9 +34,9 @@ class SettingsPage(QWidget):
         layout.setSpacing(20)
 
         title = QLabel("Settings & Preferences")
-        title.setStyleSheet("font-size: 22px; font-weight: bold;")
+        title.setObjectName("PageTitle")
         subtitle = QLabel("Personalize application theme, monitoring frequency, and options")
-        subtitle.setStyleSheet("color: #71717a; font-size: 13px;")
+        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
         layout.addWidget(title)
         layout.addWidget(subtitle)
 

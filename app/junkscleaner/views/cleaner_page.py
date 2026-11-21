@@ -47,10 +47,10 @@ class CleanerPage(QWidget):
         # Header
         header_layout = QHBoxLayout()
         header_text = QVBoxLayout()
-        title = QLabel("🧹 Junk File Cleaner")
-        title.setStyleSheet("font-size: 22px; font-weight: bold; letter-spacing: -0.4px;")
+        title = QLabel("Junk File Cleaner")
+        title.setObjectName("PageTitle")
         subtitle = QLabel("Safe preview-first cleanup for disposable temporary files")
-        subtitle.setStyleSheet("color: #71717a; font-size: 13px;")
+        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
         header_text.addWidget(title)
         header_text.addWidget(subtitle)
         header_layout.addLayout(header_text)

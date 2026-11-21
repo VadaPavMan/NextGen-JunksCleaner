@@ -197,3 +197,40 @@ def test_main_window_navigation(
 
     finally:
         window.close()
+
+
+def test_windowed_mode_responsiveness(
+    qapp: QApplication, native_core: NativeCore, safe_temp_workspace: Path
+) -> None:
+    """Verify that in windowed mode (smaller dimensions) cards maintain minimum heights."""
+    cfg_file = safe_temp_workspace / "ui_windowed_config.json"
+    config_mgr = ConfigManager(config_path=cfg_file)
+    monitor_service = SystemMonitorService(native_core=native_core, interval_seconds=1.0)
+    cleaner_service = JunkCleanerService(native_core=native_core)
+
+    window = MainWindow(
+        native_core=native_core,
+        config_mgr=config_mgr,
+        monitor_service=monitor_service,
+        cleaner_service=cleaner_service,
+    )
+
+    try:
+        window.resize(880, 560)
+        window.btn_memory.click()
+        qapp.processEvents()
+
+        mp = window.memory_page
+        for cb in [
+            mp.cb_working_sets,
+            mp.cb_system_cache,
+            mp.cb_standby_list,
+            mp.cb_modified_list,
+        ]:
+            card = cb.parentWidget()
+            assert card is not None
+            assert card.height() >= 60, f"Card {card} height collapsed to {card.height()}"
+
+    finally:
+        window.close()
+
