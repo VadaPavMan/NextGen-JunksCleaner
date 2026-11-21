@@ -80,7 +80,8 @@ int main() {
         TEST_ASSERT(status == JC_ERROR_INVALID_ARGUMENT, "Empty operation mask must return JC_ERROR_INVALID_ARGUMENT");
     }
 
-    // 5. Valid Process Working Sets trimming
+    // 5. Valid memory operation per platform
+#if defined(_WIN32)
     {
         jc_memory_clean_params_t params{};
         params.struct_size = sizeof(jc_memory_clean_params_t);
@@ -92,7 +93,6 @@ int main() {
         res.abi_version = JC_CURRENT_ABI_VERSION;
 
         jc_status_t status = jc_execute_memory_clean(&params, &res);
-        // On Windows, working set trimming should succeed (or partial success if some system processes are access denied)
         TEST_ASSERT(status == JC_OK || status == JC_ERROR_PARTIAL_SUCCESS, "Working set clean should succeed or return partial success");
         TEST_ASSERT((res.operations_attempted & JC_MEM_OP_WORKING_SETS) != 0, "Operation attempted must include JC_MEM_OP_WORKING_SETS");
         TEST_ASSERT(res.before_used_bytes > 0, "Before memory usage must be recorded");
@@ -104,6 +104,41 @@ int main() {
         std::cout << "  - Processes Trimmed: " << res.processes_trimmed << " (Failed: " << res.processes_failed << ")" << std::endl;
         std::cout << "  - Reclaimed: " << (res.bytes_reclaimed / (1024 * 1024)) << " MB" << std::endl;
     }
+#elif defined(__linux__)
+    // On Linux, sync/modified list is supported unprivileged
+    {
+        jc_memory_clean_params_t params{};
+        params.struct_size = sizeof(jc_memory_clean_params_t);
+        params.abi_version = JC_CURRENT_ABI_VERSION;
+        params.operations_mask = JC_MEM_OP_MODIFIED_LIST;
+
+        jc_memory_clean_result_t res{};
+        res.struct_size = sizeof(jc_memory_clean_result_t);
+        res.abi_version = JC_CURRENT_ABI_VERSION;
+
+        jc_status_t status = jc_execute_memory_clean(&params, &res);
+        TEST_ASSERT(status == JC_OK, "sync/modified list should succeed on Linux");
+        TEST_ASSERT((res.operations_attempted & JC_MEM_OP_MODIFIED_LIST) != 0, "Operation attempted must include JC_MEM_OP_MODIFIED_LIST");
+        TEST_ASSERT(res.before_used_bytes > 0, "Before memory usage must be recorded");
+        TEST_ASSERT(res.after_used_bytes > 0, "After memory usage must be recorded");
+        std::cout << "  - Linux sync/modified list executed successfully." << std::endl;
+    }
+    // And working sets should explicitly report unsupported
+    {
+        jc_memory_clean_params_t params{};
+        params.struct_size = sizeof(jc_memory_clean_params_t);
+        params.abi_version = JC_CURRENT_ABI_VERSION;
+        params.operations_mask = JC_MEM_OP_WORKING_SETS;
+
+        jc_memory_clean_result_t res{};
+        res.struct_size = sizeof(jc_memory_clean_result_t);
+        res.abi_version = JC_CURRENT_ABI_VERSION;
+
+        jc_status_t status = jc_execute_memory_clean(&params, &res);
+        TEST_ASSERT(status == JC_ERROR_UNSUPPORTED, "Working sets must be unsupported on Linux");
+        std::cout << "  - Linux working sets explicitly returned JC_ERROR_UNSUPPORTED." << std::endl;
+    }
+#endif
 
     std::cout << "[TEST] All Memory Cleaner native tests passed successfully!" << std::endl;
     return 0;

@@ -63,6 +63,12 @@ jc_status_t execute_platform_memory_clean(
     if (detail.operations_succeeded > 0) {
         return JC_ERROR_PARTIAL_SUCCESS;
     }
+
+    // Process working sets is explicitly unsupported on Linux
+    if (operations_mask == JC_MEM_OP_WORKING_SETS) {
+        return JC_ERROR_UNSUPPORTED;
+    }
+
     if (geteuid() != 0) {
         return JC_ERROR_PERMISSION_DENIED;
     }

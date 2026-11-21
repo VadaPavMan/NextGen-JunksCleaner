@@ -70,3 +70,8 @@ class MemoryCleanerService:
         """Return audit history records of all executed memory optimizations."""
         with self._lock:
             return list(self._audit_history)
+
+    def clear_audit_history(self) -> None:
+        """Clear historical memory audit logs."""
+        with self._lock:
+            self._audit_history.clear()

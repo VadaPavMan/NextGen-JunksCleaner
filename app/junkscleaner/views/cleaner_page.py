@@ -47,8 +47,8 @@ class CleanerPage(QWidget):
         # Header
         header_layout = QHBoxLayout()
         header_text = QVBoxLayout()
-        title = QLabel("Junk File Cleaner")
-        title.setStyleSheet("font-size: 22px; font-weight: bold;")
+        title = QLabel("🧹 Junk File Cleaner")
+        title.setStyleSheet("font-size: 22px; font-weight: bold; letter-spacing: -0.4px;")
         subtitle = QLabel("Safe preview-first cleanup for disposable temporary files")
         subtitle.setStyleSheet("color: #71717a; font-size: 13px;")
         header_text.addWidget(title)
@@ -56,7 +56,7 @@ class CleanerPage(QWidget):
         header_layout.addLayout(header_text)
         header_layout.addStretch()
 
-        self.scan_button = QPushButton("Scan for Junk")
+        self.scan_button = QPushButton("🔍  Scan for Junk")
         self.scan_button.setObjectName("PrimaryButton")
         self.scan_button.clicked.connect(self._start_scan)
         header_layout.addWidget(self.scan_button)
@@ -96,12 +96,12 @@ class CleanerPage(QWidget):
         action_layout = QHBoxLayout(self.action_frame)
         action_layout.setContentsMargins(12, 12, 12, 12)
 
-        self.select_all_btn = QPushButton("Select All")
+        self.select_all_btn = QPushButton("✓ Select All")
         self.select_all_btn.setObjectName("SecondaryButton")
         self.select_all_btn.clicked.connect(self._select_all)
         action_layout.addWidget(self.select_all_btn)
 
-        self.deselect_all_btn = QPushButton("Deselect All")
+        self.deselect_all_btn = QPushButton("✕ Deselect All")
         self.deselect_all_btn.setObjectName("SecondaryButton")
         self.deselect_all_btn.clicked.connect(self._deselect_all)
         action_layout.addWidget(self.deselect_all_btn)
@@ -109,15 +109,17 @@ class CleanerPage(QWidget):
         action_layout.addStretch()
 
         self.summary_label = QLabel("0 items selected (0 B)")
-        self.summary_label.setStyleSheet("font-weight: bold; font-size: 14px; margin-right: 12px;")
+        self.summary_label.setStyleSheet(
+            "font-weight: 700; font-size: 13px; color: #f1f5f9; margin-right: 12px;"
+        )
         action_layout.addWidget(self.summary_label)
 
-        self.dry_run_btn = QPushButton("Simulate (Dry Run)")
+        self.dry_run_btn = QPushButton("🧪 Simulate (Dry Run)")
         self.dry_run_btn.setObjectName("SecondaryButton")
         self.dry_run_btn.clicked.connect(lambda: self._confirm_and_clean(is_dry_run=True))
         action_layout.addWidget(self.dry_run_btn)
 
-        self.clean_button = QPushButton("Clean Selected Files")
+        self.clean_button = QPushButton("🗑️ Clean Selected Files")
         self.clean_button.setObjectName("DangerButton")
         self.clean_button.clicked.connect(lambda: self._confirm_and_clean(is_dry_run=False))
         action_layout.addWidget(self.clean_button)

@@ -84,27 +84,54 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(12, 16, 12, 16)
         sidebar_layout.setSpacing(8)
 
-        # Logo / Title
-        title_label = QLabel("JunksCleaner")
+        # Logo / Brand Box
+        brand_frame = QFrame()
+        brand_layout = QVBoxLayout(brand_frame)
+        brand_layout.setContentsMargins(4, 2, 4, 8)
+        brand_layout.setSpacing(2)
+
+        title_label = QLabel("⚡ JunksCleaner")
         title_label.setObjectName("AppTitle")
-        sidebar_layout.addWidget(title_label)
+        subtitle_label = QLabel("NextGen Desktop Utility")
+        subtitle_label.setObjectName("SidebarSubtitle")
+
+        brand_layout.addWidget(title_label)
+        brand_layout.addWidget(subtitle_label)
+        sidebar_layout.addWidget(brand_frame)
 
         # Nav button group
         self.nav_group = QButtonGroup(self)
         self.nav_group.setExclusive(True)
 
-        self.btn_dashboard = self._create_nav_button("Dashboard", 0)
-        self.btn_cleaner = self._create_nav_button("Junk Cleaner", 1)
-        self.btn_memory = self._create_nav_button("Clean Memory", 2)
-        self.btn_activity = self._create_nav_button("Activity", 3)
-        self.btn_settings = self._create_nav_button("Settings", 4)
+        self.btn_dashboard = self._create_nav_button("📊  Dashboard", 0)
+        self.btn_cleaner = self._create_nav_button("🧹  Junk Cleaner", 1)
+        self.btn_memory = self._create_nav_button("⚡  Clean Memory", 2)
+        self.btn_activity = self._create_nav_button("📋  Activity Log", 3)
+        self.btn_settings = self._create_nav_button("⚙️  Settings", 4)
 
         sidebar_layout.addWidget(self.btn_dashboard)
         sidebar_layout.addWidget(self.btn_cleaner)
         sidebar_layout.addWidget(self.btn_memory)
         sidebar_layout.addWidget(self.btn_activity)
         sidebar_layout.addWidget(self.btn_settings)
+
         sidebar_layout.addStretch()
+
+        # Sidebar footer status
+        status_box = QFrame()
+        status_box.setObjectName("OptionCard")
+        status_box_layout = QVBoxLayout(status_box)
+        status_box_layout.setContentsMargins(10, 8, 10, 8)
+        status_box_layout.setSpacing(2)
+
+        status_dot = QLabel("● Native Core Active")
+        status_dot.setStyleSheet("color: #10b981; font-weight: 700; font-size: 11px;")
+        arch_label = QLabel("C ABI Engine • v1.0.0")
+        arch_label.setStyleSheet("color: #64748b; font-size: 11px;")
+
+        status_box_layout.addWidget(status_dot)
+        status_box_layout.addWidget(arch_label)
+        sidebar_layout.addWidget(status_box)
 
         main_layout.addWidget(sidebar)
 

@@ -41,13 +41,13 @@ class MemoryPage(QWidget):
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
 
-        # 1. Header
+        # 1. Header with live privilege chip
         header_layout = QHBoxLayout()
         header_text = QVBoxLayout()
-        title = QLabel("Clean Memory")
-        title.setStyleSheet("font-size: 22px; font-weight: bold;")
+        title = QLabel("⚡ Clean Memory")
+        title.setStyleSheet("font-size: 22px; font-weight: bold; letter-spacing: -0.4px;")
         subtitle = QLabel(
-            "Safe RAM optimization and cache reclamation with transparent privilege disclosure"
+            "Safe RAM optimization & cache reclamation inspired by Mem Reduct and WinMemoryCleaner"
         )
         subtitle.setStyleSheet("color: #71717a; font-size: 13px;")
         header_text.addWidget(title)
@@ -57,37 +57,44 @@ class MemoryPage(QWidget):
 
         # Elevation badge
         elev_label = QLabel(
-            "● Running as Administrator" if self._is_elevated else "○ Running as Standard User"
+            "● Administrator Mode" if self._is_elevated else "○ Standard User Mode"
         )
         elev_style = (
-            "color: #10b981; font-weight: bold; background: #064e3b; "
-            "padding: 6px 12px; border-radius: 6px;"
+            "color: #10b981; font-weight: 700; font-size: 12px; "
+            "background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); "
+            "padding: 6px 14px; border-radius: 12px;"
             if self._is_elevated
-            else "color: #94a3b8; font-weight: 500; background: #1e293b; "
-            "padding: 6px 12px; border-radius: 6px;"
+            else "color: #94a3b8; font-weight: 600; font-size: 12px; "
+            "background: rgba(148, 163, 184, 0.10); border: 1px solid rgba(148, 163, 184, 0.25); "
+            "padding: 6px 14px; border-radius: 12px;"
         )
         elev_label.setStyleSheet(elev_style)
         header_layout.addWidget(elev_label)
         layout.addLayout(header_layout)
 
-        # 2. Live Memory Telemetry Card
+        # 2. Live Memory Telemetry Card with accent border
         self.telemetry_card = QFrame()
         self.telemetry_card.setObjectName("Card")
+        self.telemetry_card.setStyleSheet(
+            "QFrame#Card { border-top: 3px solid #10b981; }"
+        )
         telemetry_layout = QVBoxLayout(self.telemetry_card)
+        telemetry_layout.setContentsMargins(18, 18, 18, 18)
+        telemetry_layout.setSpacing(12)
 
-        card_title = QLabel("System Memory Overview")
+        card_title = QLabel("PHYSICAL RAM UTILIZATION")
         card_title.setObjectName("CardTitle")
         telemetry_layout.addWidget(card_title)
 
         stats_row = QHBoxLayout()
         self.lbl_used_ram = QLabel("Used: --")
-        self.lbl_used_ram.setStyleSheet("font-size: 14px; font-weight: bold;")
+        self.lbl_used_ram.setStyleSheet("font-size: 15px; font-weight: 700; color: #f8fafc;")
         self.lbl_avail_ram = QLabel("Available: --")
-        self.lbl_avail_ram.setStyleSheet("font-size: 14px; color: #10b981;")
+        self.lbl_avail_ram.setStyleSheet("font-size: 15px; font-weight: 600; color: #10b981;")
         self.lbl_cached_ram = QLabel("Cache / Standby: --")
-        self.lbl_cached_ram.setStyleSheet("font-size: 14px; color: #a1a1aa;")
+        self.lbl_cached_ram.setStyleSheet("font-size: 15px; font-weight: 600; color: #38bdf8;")
         self.lbl_total_ram = QLabel("Total: --")
-        self.lbl_total_ram.setStyleSheet("font-size: 14px; color: #71717a;")
+        self.lbl_total_ram.setStyleSheet("font-size: 15px; color: #64748b;")
 
         stats_row.addWidget(self.lbl_used_ram)
         stats_row.addWidget(self.lbl_avail_ram)
@@ -100,7 +107,7 @@ class MemoryPage(QWidget):
         self.memory_progress.setRange(0, 100)
         self.memory_progress.setValue(0)
         self.memory_progress.setTextVisible(True)
-        self.memory_progress.setFixedHeight(12)
+        self.memory_progress.setFixedHeight(14)
         telemetry_layout.addWidget(self.memory_progress)
 
         layout.addWidget(self.telemetry_card)
@@ -109,66 +116,125 @@ class MemoryPage(QWidget):
         ops_card = QFrame()
         ops_card.setObjectName("Card")
         ops_layout = QVBoxLayout(ops_card)
+        ops_layout.setContentsMargins(18, 18, 18, 18)
+        ops_layout.setSpacing(10)
 
-        ops_title = QLabel("Optimization Targets")
+        ops_title = QLabel("OPTIMIZATION TARGETS")
         ops_title.setObjectName("CardTitle")
         ops_layout.addWidget(ops_title)
 
-        # Checkboxes with descriptions
+        # Target 1: Process Working Sets
+        card_ws = QFrame()
+        card_ws.setObjectName("OptionCard")
+        layout_ws = QVBoxLayout(card_ws)
+        layout_ws.setContentsMargins(12, 10, 12, 10)
+        row_ws = QHBoxLayout()
         self.cb_working_sets = QCheckBox("Process Working Sets")
         self.cb_working_sets.setChecked(True)
-        self.cb_working_sets.setStyleSheet("font-weight: bold;")
-        lbl_ws_desc = QLabel(
-            "Trims working sets of running processes to release inactive memory pages. "
-            "(Unprivileged / Standard User)"
+        self.cb_working_sets.setStyleSheet("font-weight: 700; font-size: 13px;")
+        pill_ws = QLabel("🛡️ Standard User")
+        pill_ws.setStyleSheet(
+            "font-size: 10px; font-weight: 700; color: #38bdf8; "
+            "background: rgba(56, 189, 248, 0.12); padding: 3px 8px; border-radius: 6px;"
         )
-        desc_style = "color: #71717a; font-size: 12px; margin-left: 20px; margin-bottom: 8px;"
-        lbl_ws_desc.setStyleSheet(desc_style)
-        ops_layout.addWidget(self.cb_working_sets)
-        ops_layout.addWidget(lbl_ws_desc)
+        row_ws.addWidget(self.cb_working_sets)
+        row_ws.addStretch()
+        row_ws.addWidget(pill_ws)
+        layout_ws.addLayout(row_ws)
+        lbl_ws_desc = QLabel(
+            "Trims unreferenced working set pages of running processes back to the memory manager."
+        )
+        lbl_ws_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        layout_ws.addWidget(lbl_ws_desc)
+        ops_layout.addWidget(card_ws)
 
+        # Target 2: System File Cache
+        card_sc = QFrame()
+        card_sc.setObjectName("OptionCard")
+        layout_sc = QVBoxLayout(card_sc)
+        layout_sc.setContentsMargins(12, 10, 12, 10)
+        row_sc = QHBoxLayout()
         self.cb_system_cache = QCheckBox("System File Cache")
         self.cb_system_cache.setChecked(self._is_elevated)
-        self.cb_system_cache.setStyleSheet("font-weight: bold;")
-        lbl_sc_desc = QLabel(
-            "Flushes the system working set and file system cache. (Requires Administrator)"
+        self.cb_system_cache.setStyleSheet("font-weight: 700; font-size: 13px;")
+        pill_sc = QLabel("⚡ Admin Required")
+        pill_sc.setStyleSheet(
+            "font-size: 10px; font-weight: 700; color: #f59e0b; "
+            "background: rgba(245, 158, 11, 0.12); padding: 3px 8px; border-radius: 6px;"
         )
-        lbl_sc_desc.setStyleSheet(desc_style)
-        ops_layout.addWidget(self.cb_system_cache)
-        ops_layout.addWidget(lbl_sc_desc)
+        row_sc.addWidget(self.cb_system_cache)
+        row_sc.addStretch()
+        row_sc.addWidget(pill_sc)
+        layout_sc.addLayout(row_sc)
+        lbl_sc_desc = QLabel(
+            "Flushes the system working set and file system cache using SetSystemFileCacheSize."
+        )
+        lbl_sc_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        layout_sc.addWidget(lbl_sc_desc)
+        ops_layout.addWidget(card_sc)
 
+        # Target 3: Standby Page List
+        card_sb = QFrame()
+        card_sb.setObjectName("OptionCard")
+        layout_sb = QVBoxLayout(card_sb)
+        layout_sb.setContentsMargins(12, 10, 12, 10)
+        row_sb = QHBoxLayout()
         self.cb_standby_list = QCheckBox("Standby Page List")
         self.cb_standby_list.setChecked(self._is_elevated)
-        self.cb_standby_list.setStyleSheet("font-weight: bold;")
-        lbl_sb_desc = QLabel(
-            "Purges cached standby pages into free memory. Note: Standby memory is already "
-            "available when needed; purging may cause subsequent reads to hit disk. (Admin)"
+        self.cb_standby_list.setStyleSheet("font-weight: 700; font-size: 13px;")
+        pill_sb = QLabel("⚡ Admin Required")
+        pill_sb.setStyleSheet(
+            "font-size: 10px; font-weight: 700; color: #f59e0b; "
+            "background: rgba(245, 158, 11, 0.12); padding: 3px 8px; border-radius: 6px;"
         )
-        lbl_sb_desc.setStyleSheet(desc_style)
-        ops_layout.addWidget(self.cb_standby_list)
-        ops_layout.addWidget(lbl_sb_desc)
+        row_sb.addWidget(self.cb_standby_list)
+        row_sb.addStretch()
+        row_sb.addWidget(pill_sb)
+        layout_sb.addLayout(row_sb)
+        lbl_sb_desc = QLabel(
+            "Purges cached standby pages into free memory. Note: Standby cache is already "
+            "available when needed; purging may increase disk I/O on immediate file re-reads."
+        )
+        lbl_sb_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        layout_sb.addWidget(lbl_sb_desc)
+        ops_layout.addWidget(card_sb)
 
+        # Target 4: Modified Page List
+        card_mod = QFrame()
+        card_mod.setObjectName("OptionCard")
+        layout_mod = QVBoxLayout(card_mod)
+        layout_mod.setContentsMargins(12, 10, 12, 10)
+        row_mod = QHBoxLayout()
         self.cb_modified_list = QCheckBox("Modified Page List")
         self.cb_modified_list.setChecked(False)
-        self.cb_modified_list.setStyleSheet("font-weight: bold;")
-        lbl_mod_desc = QLabel(
-            "Forces memory manager to flush modified pages to disk or pagefile. (Requires Admin)"
+        self.cb_modified_list.setStyleSheet("font-weight: 700; font-size: 13px;")
+        pill_mod = QLabel("⚡ Admin Required")
+        pill_mod.setStyleSheet(
+            "font-size: 10px; font-weight: 700; color: #f59e0b; "
+            "background: rgba(245, 158, 11, 0.12); padding: 3px 8px; border-radius: 6px;"
         )
-        lbl_mod_desc.setStyleSheet("color: #71717a; font-size: 12px; margin-left: 20px;")
-        ops_layout.addWidget(self.cb_modified_list)
-        ops_layout.addWidget(lbl_mod_desc)
+        row_mod.addWidget(self.cb_modified_list)
+        row_mod.addStretch()
+        row_mod.addWidget(pill_mod)
+        layout_mod.addLayout(row_mod)
+        lbl_mod_desc = QLabel(
+            "Flushes modified dirty pages to disk backing store or pagefile."
+        )
+        lbl_mod_desc.setStyleSheet("color: #64748b; font-size: 12px; margin-left: 26px;")
+        layout_mod.addWidget(lbl_mod_desc)
+        ops_layout.addWidget(card_mod)
 
         layout.addWidget(ops_card)
 
-        # 4. Action bar & Warning Disclosure
+        # 4. Action bar
         action_layout = QHBoxLayout()
-        self.btn_clean = QPushButton("Clean Memory")
+        self.btn_clean = QPushButton("⚡  Clean Selected Targets")
         self.btn_clean.setObjectName("PrimaryButton")
-        self.btn_clean.setFixedHeight(36)
+        self.btn_clean.setFixedHeight(38)
         self.btn_clean.clicked.connect(self._on_clean_clicked)
 
-        self.status_label = QLabel("Select targets above and click Clean Memory")
-        self.status_label.setStyleSheet("color: #71717a;")
+        self.status_label = QLabel("Select targets above and click Clean Selected Targets")
+        self.status_label.setStyleSheet("color: #71717a; font-size: 13px;")
 
         action_layout.addWidget(self.btn_clean)
         action_layout.addWidget(self.status_label)
@@ -177,23 +243,29 @@ class MemoryPage(QWidget):
 
         # 5. Results Card (initially hidden)
         self.result_card = QFrame()
-        self.result_card.setObjectName("Card")
+        self.result_card.setObjectName("HeroCard")
+        self.result_card.setStyleSheet(
+            "QFrame#HeroCard { border: 1px solid #059669; "
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #064e3b, stop:1 #065f46); }"
+        )
         self.result_card.setVisible(False)
         result_layout = QVBoxLayout(self.result_card)
 
-        res_title = QLabel("Last Optimization Result")
-        res_title.setObjectName("CardTitle")
+        res_title = QLabel("OPTIMIZATION REPORT")
+        res_title.setStyleSheet(
+            "font-size: 11px; font-weight: 700; color: #a7f3d0; letter-spacing: 0.6px;"
+        )
         result_layout.addWidget(res_title)
 
         res_metrics_row = QHBoxLayout()
         self.res_reclaimed_label = QLabel("Reclaimed: --")
         self.res_reclaimed_label.setStyleSheet(
-            "font-size: 16px; font-weight: bold; color: #10b981;"
+            "font-size: 17px; font-weight: 800; color: #ffffff;"
         )
         self.res_before_after = QLabel("Before: -- | After: --")
-        self.res_before_after.setStyleSheet("font-size: 13px; color: #a1a1aa;")
+        self.res_before_after.setStyleSheet("font-size: 13px; color: #d1fae5; font-weight: 500;")
         self.res_processes = QLabel("Processes Trimmed: --")
-        self.res_processes.setStyleSheet("font-size: 13px; color: #a1a1aa;")
+        self.res_processes.setStyleSheet("font-size: 13px; color: #d1fae5; font-weight: 500;")
 
         res_metrics_row.addWidget(self.res_reclaimed_label)
         res_metrics_row.addWidget(self.res_before_after)

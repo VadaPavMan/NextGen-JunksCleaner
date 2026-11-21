@@ -25,15 +25,21 @@ def test_memory_cleaner_service_elevation(native_core: NativeCore) -> None:
 
 
 def test_memory_cleaner_service_execution(native_core: NativeCore) -> None:
-    """Verify end-to-end memory cleaning with working sets."""
+    """Verify end-to-end memory cleaning with appropriate platform target."""
+    import platform
+
     service = MemoryCleanerService(native_core=native_core)
     assert len(service.get_audit_history()) == 0
 
-    # Execute working set trim (accessible to current user unprivileged)
-    result = service.clean(JcMemoryOperationFlags.WORKING_SETS)
+    op = (
+        JcMemoryOperationFlags.WORKING_SETS
+        if platform.system() == "Windows"
+        else JcMemoryOperationFlags.MODIFIED_LIST
+    )
+    result = service.clean(op)
 
     assert isinstance(result, JcMemoryCleanResult)
-    assert (result.operations_attempted & JcMemoryOperationFlags.WORKING_SETS) != 0
+    assert (result.operations_attempted & op) != 0
     assert result.before_used_bytes > 0
     assert result.after_used_bytes > 0
     assert result.bytes_reclaimed >= 0
