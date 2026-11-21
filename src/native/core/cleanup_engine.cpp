@@ -16,7 +16,9 @@ namespace {
 
 bool is_excluded_filename(const std::string& filename) {
     std::string lower = filename;
-    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
 
     // Skip databases, active lock files, and session caches
     if (lower.length() >= 3 && lower.substr(lower.length() - 3) == ".db") return true;
