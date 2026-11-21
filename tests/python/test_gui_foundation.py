@@ -106,7 +106,7 @@ def test_dashboard_page_telemetry_display(qapp: QApplication) -> None:
 
     page.update_snapshot(sample_snap)
     assert page.cpu_card.value_label.text() == "42.5%"
-    assert "8 Logical Cores" in page.cpu_card.subtext_label.text()
+    assert "8 logical cores" in page.cpu_card.subtext_label.text()
     assert page.memory_card.value_label.text() == "50.0%"
     assert page.disk_card.value_label.text() == "50.0%"
 

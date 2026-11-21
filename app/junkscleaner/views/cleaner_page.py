@@ -41,45 +41,48 @@ class CleanerPage(QWidget):
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(16)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
 
-        # Header
-        header_layout = QHBoxLayout()
-        header_text = QVBoxLayout()
-        title = QLabel("Junk File Cleaner")
+        # ── Header ───────────────────────────────────────────────────
+        header = QVBoxLayout()
+        header.setSpacing(4)
+        title = QLabel("Junk Cleaner")
         title.setObjectName("PageTitle")
-        subtitle = QLabel("Safe preview-first cleanup for disposable temporary files")
-        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
-        header_text.addWidget(title)
-        header_text.addWidget(subtitle)
-        header_layout.addLayout(header_text)
-        header_layout.addStretch()
+        header.addWidget(title)
 
-        self.scan_button = QPushButton("🔍  Scan for Junk")
+        subtitle = QLabel("Preview and safely remove disposable temporary files")
+        subtitle.setObjectName("PageSubtitle")
+        header.addWidget(subtitle)
+        layout.addLayout(header)
+
+        # ── Toolbar row ──────────────────────────────────────────────
+        toolbar = QHBoxLayout()
+        toolbar.setSpacing(10)
+
+        self.scan_button = QPushButton("Scan for Junk")
         self.scan_button.setObjectName("PrimaryButton")
         self.scan_button.clicked.connect(self._start_scan)
-        header_layout.addWidget(self.scan_button)
+        toolbar.addWidget(self.scan_button)
 
-        layout.addLayout(header_layout)
+        self.status_label = QLabel("Ready. Click Scan to search temporary folders.")
+        self.status_label.setObjectName("StatusLabel")
+        toolbar.addWidget(self.status_label)
+        toolbar.addStretch()
 
-        # Progress / Status bar
+        layout.addLayout(toolbar)
+
+        # Progress bar (indeterminate)
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0)  # Indeterminate
-        self.progress_bar.setFixedHeight(4)
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setFixedHeight(3)
         self.progress_bar.hide()
         layout.addWidget(self.progress_bar)
 
-        self.status_label = QLabel(
-            "Click 'Scan for Junk' to search allow-listed temporary folders."
-        )
-        self.status_label.setStyleSheet("color: #a1a1aa; font-size: 13px;")
-        layout.addWidget(self.status_label)
-
-        # Preview Table
+        # ── Preview table ────────────────────────────────────────────
         self.table = QTableWidget()
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Target Item", "Path", "Size", "Risk", "Status"])
+        self.table.setHorizontalHeaderLabels(["Item", "Path", "Size", "Risk", "Status"])
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
@@ -87,21 +90,24 @@ class CleanerPage(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
+        self.table.verticalHeader().setVisible(False)
         self.table.itemChanged.connect(self._on_table_item_changed)
         layout.addWidget(self.table)
 
-        # Action bar at bottom
+        # ── Action bar ───────────────────────────────────────────────
         self.action_frame = QFrame()
         self.action_frame.setObjectName("Card")
         action_layout = QHBoxLayout(self.action_frame)
-        action_layout.setContentsMargins(12, 12, 12, 12)
+        action_layout.setContentsMargins(14, 10, 14, 10)
+        action_layout.setSpacing(8)
 
-        self.select_all_btn = QPushButton("✓ Select All")
+        self.select_all_btn = QPushButton("Select All")
         self.select_all_btn.setObjectName("SecondaryButton")
         self.select_all_btn.clicked.connect(self._select_all)
         action_layout.addWidget(self.select_all_btn)
 
-        self.deselect_all_btn = QPushButton("✕ Deselect All")
+        self.deselect_all_btn = QPushButton("Deselect All")
         self.deselect_all_btn.setObjectName("SecondaryButton")
         self.deselect_all_btn.clicked.connect(self._deselect_all)
         action_layout.addWidget(self.deselect_all_btn)
@@ -109,17 +115,15 @@ class CleanerPage(QWidget):
         action_layout.addStretch()
 
         self.summary_label = QLabel("0 items selected (0 B)")
-        self.summary_label.setStyleSheet(
-            "font-weight: 700; font-size: 13px; color: #f1f5f9; margin-right: 12px;"
-        )
+        self.summary_label.setStyleSheet("font-weight: 600; font-size: 12px;")
         action_layout.addWidget(self.summary_label)
 
-        self.dry_run_btn = QPushButton("🧪 Simulate (Dry Run)")
+        self.dry_run_btn = QPushButton("Dry Run")
         self.dry_run_btn.setObjectName("SecondaryButton")
         self.dry_run_btn.clicked.connect(lambda: self._confirm_and_clean(is_dry_run=True))
         action_layout.addWidget(self.dry_run_btn)
 
-        self.clean_button = QPushButton("🗑️ Clean Selected Files")
+        self.clean_button = QPushButton("Delete Selected")
         self.clean_button.setObjectName("DangerButton")
         self.clean_button.clicked.connect(lambda: self._confirm_and_clean(is_dry_run=False))
         action_layout.addWidget(self.clean_button)
@@ -139,7 +143,7 @@ class CleanerPage(QWidget):
         self.scan_button.setEnabled(False)
         self.action_frame.setEnabled(False)
         self.progress_bar.show()
-        self.status_label.setText("Scanning allow-listed temporary folders...")
+        self.status_label.setText("Scanning temporary folders\u2026")
 
         self._scan_worker = ScanWorker(self.service, parent=self)
         self._scan_worker.scan_finished.connect(self._on_scan_finished)
@@ -156,7 +160,6 @@ class CleanerPage(QWidget):
         self.table.setRowCount(len(result.items))
 
         for row, item in enumerate(result.items):
-            # Checkbox item
             check_item = QTableWidgetItem(item.display_path)
             check_item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
             check_item.setCheckState(Qt.Checked if not item.is_locked else Qt.Unchecked)
@@ -166,14 +169,14 @@ class CleanerPage(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(item.size_display))
             self.table.setItem(row, 3, QTableWidgetItem(item.risk_level.name))
 
-            status_txt = "Locked (In Use)" if item.is_locked else "Ready"
+            status_txt = "Locked" if item.is_locked else "Ready"
             self.table.setItem(row, 4, QTableWidgetItem(status_txt))
 
         self.table.blockSignals(False)
 
         count = len(result.items)
         size_txt = result.total_estimated_display
-        self.status_label.setText(f"Scan complete. Found {count} candidate files ({size_txt}).")
+        self.status_label.setText(f"Found {count} candidates ({size_txt})")
         self.action_frame.setEnabled(count > 0)
         self._update_selection_summary()
 
@@ -253,7 +256,7 @@ class CleanerPage(QWidget):
         self.progress_bar.show()
 
         action_name = "Simulating cleanup" if is_dry_run else "Deleting selected files"
-        self.status_label.setText(f"{action_name}...")
+        self.status_label.setText(f"{action_name}\u2026")
 
         self._clean_worker = CleanWorker(
             self.service,
@@ -275,25 +278,23 @@ class CleanerPage(QWidget):
         self.dry_run_btn.setEnabled(True)
 
         status_prefix = (
-            "Simulation (Dry Run) Complete"
+            "Dry Run Complete"
             if self._clean_worker and self._clean_worker.is_dry_run
             else "Cleanup Complete"
         )
         msg = (
-            f"Successfully removed: {report.deleted_count} files "
+            f"Removed: {report.deleted_count} files "
             f"({report.actual_deleted_display})\n"
-            f"Skipped / In-Use: {report.skipped_count}\n"
+            f"Skipped: {report.skipped_count}\n"
             f"Failed: {report.failed_count}\n"
             f"Duration: {report.duration_ms} ms"
         )
         if report.was_cancelled:
-            msg += "\n\nOperation was cancelled by user."
+            msg += "\n\nOperation was cancelled."
 
         QMessageBox.information(self, status_prefix, msg)
-        self.status_label.setText(f"Finished: {report.actual_deleted_display} freed.")
+        self.status_label.setText(f"Done \u2014 {report.actual_deleted_display} freed")
         self.cleanup_completed.emit(report)
-
-        # Refresh scan automatically
         self._start_scan()
 
     @Slot(str)
@@ -303,13 +304,13 @@ class CleanerPage(QWidget):
         self.scan_button.setEnabled(True)
         self.clean_button.setEnabled(True)
         self.dry_run_btn.setEnabled(True)
-        self.status_label.setText(f"Cleanup error: {error_msg}")
+        self.status_label.setText(f"Error: {error_msg}")
         QMessageBox.critical(
-            self, "Cleanup Failed", f"Error during cleanup execution:\n{error_msg}"
+            self, "Cleanup Failed", f"Error during cleanup:\n{error_msg}"
         )
 
     @Slot()
     def _cancel_active_operation(self) -> None:
         if self._clean_worker:
             self._clean_worker.cancel()
-            self.status_label.setText("Cancelling operation, please wait...")
+            self.status_label.setText("Cancelling\u2026")

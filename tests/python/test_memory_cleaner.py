@@ -128,7 +128,7 @@ def test_memory_page_ui(qapp: QApplication, native_core: NativeCore) -> None:
         assert page.memory_progress.value() == 50
         assert "Used:" in page.lbl_used_ram.text()
         assert "Available:" in page.lbl_avail_ram.text()
-        assert "Cache / Standby:" in page.lbl_cached_ram.text()
+        assert "Cached:" in page.lbl_cached_ram.text()
 
         # Finished result handler
         fake_res = JcMemoryCleanResult(
@@ -144,7 +144,7 @@ def test_memory_page_ui(qapp: QApplication, native_core: NativeCore) -> None:
         page._on_clean_finished(fake_res)
         assert page.result_card.isHidden() is False
         assert "1.00 GiB" in page.res_reclaimed_label.text()
-        assert "Processes Trimmed: 10" in page.res_processes.text()
+        assert "Trimmed: 10" in page.res_processes.text()
 
     finally:
         page.close()

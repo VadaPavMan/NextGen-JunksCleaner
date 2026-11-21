@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("JunksCleaner - NextGen System Utility")
         self.setWindowIcon(QIcon(get_asset_path("appicon.png")))
-        self.resize(1100, 720)
+        self.resize(1060, 680)
         self.setMinimumSize(880, 560)
 
         # Bridge for thread-safe telemetry updates
@@ -84,52 +84,62 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         central_widget = QWidget()
+        central_widget.setObjectName("CentralWidget")
         self.setCentralWidget(central_widget)
 
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # 1. Sidebar Frame
+        # ── Sidebar ──────────────────────────────────────────────────
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        sidebar.setFixedWidth(230)
+        sidebar.setFixedWidth(200)
         sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(14, 18, 14, 18)
-        sidebar_layout.setSpacing(10)
+        sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        sidebar_layout.setSpacing(0)
 
-        # Logo / Brand Box with appicon.png
-        brand_frame = QFrame()
+        # Brand header
+        brand_frame = QWidget()
         brand_layout = QHBoxLayout(brand_frame)
-        brand_layout.setContentsMargins(4, 2, 4, 12)
+        brand_layout.setContentsMargins(16, 20, 16, 16)
         brand_layout.setSpacing(10)
 
         logo_label = QLabel()
         app_icon_pixmap = QPixmap(get_asset_path("appicon.png"))
         if not app_icon_pixmap.isNull():
             logo_label.setPixmap(
-                app_icon_pixmap.scaled(32, 32, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                app_icon_pixmap.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             )
-        logo_label.setFixedSize(32, 32)
+        logo_label.setFixedSize(24, 24)
 
-        brand_text_layout = QVBoxLayout()
-        brand_text_layout.setSpacing(2)
-        brand_text_layout.setContentsMargins(0, 0, 0, 0)
-
+        brand_text = QVBoxLayout()
+        brand_text.setSpacing(1)
+        brand_text.setContentsMargins(0, 0, 0, 0)
         title_label = QLabel("JunksCleaner")
         title_label.setObjectName("AppTitle")
-        subtitle_label = QLabel("NextGen Desktop Utility")
+        subtitle_label = QLabel("System Utility")
         subtitle_label.setObjectName("SidebarSubtitle")
-
-        brand_text_layout.addWidget(title_label)
-        brand_text_layout.addWidget(subtitle_label)
+        brand_text.addWidget(title_label)
+        brand_text.addWidget(subtitle_label)
 
         brand_layout.addWidget(logo_label)
-        brand_layout.addLayout(brand_text_layout)
+        brand_layout.addLayout(brand_text)
         brand_layout.addStretch()
         sidebar_layout.addWidget(brand_frame)
 
-        # Nav button group
+        # Separator
+        sep = QFrame()
+        sep.setObjectName("SidebarSeparator")
+        sep.setFixedHeight(1)
+        sidebar_layout.addWidget(sep)
+
+        # Navigation
+        nav_container = QWidget()
+        nav_layout = QVBoxLayout(nav_container)
+        nav_layout.setContentsMargins(0, 8, 0, 8)
+        nav_layout.setSpacing(2)
+
         self.nav_group = QButtonGroup(self)
         self.nav_group.setExclusive(True)
 
@@ -139,33 +149,37 @@ class MainWindow(QMainWindow):
         self.btn_activity = self._create_nav_button("Activity Log", "activitylog.png", 3)
         self.btn_settings = self._create_nav_button("Settings", "settings.png", 4)
 
-        sidebar_layout.addWidget(self.btn_dashboard)
-        sidebar_layout.addWidget(self.btn_cleaner)
-        sidebar_layout.addWidget(self.btn_memory)
-        sidebar_layout.addWidget(self.btn_activity)
-        sidebar_layout.addWidget(self.btn_settings)
+        nav_layout.addWidget(self.btn_dashboard)
+        nav_layout.addWidget(self.btn_cleaner)
+        nav_layout.addWidget(self.btn_memory)
+        nav_layout.addWidget(self.btn_activity)
+        nav_layout.addWidget(self.btn_settings)
 
+        sidebar_layout.addWidget(nav_container)
         sidebar_layout.addStretch()
 
-        # Sidebar footer status
-        status_box = QFrame()
-        status_box.setObjectName("OptionCard")
-        status_box_layout = QVBoxLayout(status_box)
-        status_box_layout.setContentsMargins(12, 10, 12, 10)
-        status_box_layout.setSpacing(3)
+        # Sidebar footer — engine status (compact)
+        footer = QWidget()
+        footer_layout = QVBoxLayout(footer)
+        footer_layout.setContentsMargins(16, 8, 16, 14)
+        footer_layout.setSpacing(2)
 
-        status_dot = QLabel("● Native Core Active")
-        status_dot.setStyleSheet("color: #10b981; font-weight: 700; font-size: 11px;")
-        arch_label = QLabel("C ABI Engine • v1.0.0")
-        arch_label.setStyleSheet("color: #888888; font-size: 11px;")
+        status_line = QLabel("Native Core Active")
+        status_line.setObjectName("BadgeGreen")
+        status_line.setStyleSheet(
+            "color: #27ae60; font-size: 10px; font-weight: 600; "
+            "background: transparent; border: none; padding: 0;"
+        )
+        engine_line = QLabel("C ABI Engine v1.0.0")
+        engine_line.setStyleSheet("color: #5a5856; font-size: 10px;")
 
-        status_box_layout.addWidget(status_dot)
-        status_box_layout.addWidget(arch_label)
-        sidebar_layout.addWidget(status_box)
+        footer_layout.addWidget(status_line)
+        footer_layout.addWidget(engine_line)
+        sidebar_layout.addWidget(footer)
 
         main_layout.addWidget(sidebar)
 
-        # 2. Main Stacked Pages
+        # ── Main content area ────────────────────────────────────────
         self.stack = QStackedWidget()
 
         capabilities = None
@@ -201,9 +215,10 @@ class MainWindow(QMainWindow):
         btn = QPushButton(f"  {label}")
         btn.setObjectName("NavButton")
         btn.setCheckable(True)
+        btn.setToolTip(label)
         icon_path = get_asset_path(icon_filename)
         btn.setIcon(QIcon(icon_path))
-        btn.setIconSize(QSize(20, 20))
+        btn.setIconSize(QSize(18, 18))
         btn.clicked.connect(lambda: self.stack.setCurrentIndex(index))
         self.nav_group.addButton(btn, index)
         return btn

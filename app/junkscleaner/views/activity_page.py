@@ -24,38 +24,37 @@ class ActivityPage(QWidget):
         self.service = service
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(16)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
 
-        header_layout = QHBoxLayout()
+        # Header
+        header_row = QHBoxLayout()
         header_text = QVBoxLayout()
-        title = QLabel("Activity & Reports")
+        header_text.setSpacing(4)
+
+        title = QLabel("Activity Log")
         title.setObjectName("PageTitle")
-        subtitle = QLabel("Local audit trail of all previous preview, deletion, and memory runs")
-        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
         header_text.addWidget(title)
+
+        subtitle = QLabel("Audit trail of cleanup and memory optimization runs")
+        subtitle.setObjectName("PageSubtitle")
         header_text.addWidget(subtitle)
-        header_layout.addLayout(header_text)
-        header_layout.addStretch()
+
+        header_row.addLayout(header_text)
+        header_row.addStretch()
 
         self.clear_btn = QPushButton("Clear History")
         self.clear_btn.setObjectName("SecondaryButton")
         self.clear_btn.clicked.connect(self._clear_history)
-        header_layout.addWidget(self.clear_btn)
+        header_row.addWidget(self.clear_btn)
 
-        layout.addLayout(header_layout)
+        layout.addLayout(header_row)
 
+        # Table
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
-            [
-                "Timestamp",
-                "Duration",
-                "Selected",
-                "Deleted",
-                "Actual Freed",
-                "Status",
-            ]
+            ["Timestamp", "Duration", "Selected", "Deleted", "Freed", "Status"]
         )
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -65,6 +64,8 @@ class ActivityPage(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
+        self.table.verticalHeader().setVisible(False)
         layout.addWidget(self.table)
 
         self.refresh()

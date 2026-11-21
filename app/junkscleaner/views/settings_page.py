@@ -6,8 +6,8 @@ from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import (
     QComboBox,
     QDoubleSpinBox,
-    QFormLayout,
     QFrame,
+    QHBoxLayout,
     QLabel,
     QVBoxLayout,
     QWidget,
@@ -30,43 +30,80 @@ class SettingsPage(QWidget):
         self.monitor_service = monitor_service
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(20)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(14)
 
-        title = QLabel("Settings & Preferences")
+        # Header
+        header = QVBoxLayout()
+        header.setSpacing(4)
+        title = QLabel("Settings")
         title.setObjectName("PageTitle")
-        subtitle = QLabel("Personalize application theme, monitoring frequency, and options")
-        subtitle.setStyleSheet("color: #888888; font-size: 13px;")
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
+        header.addWidget(title)
 
-        # Card container
-        card = QFrame()
-        card.setObjectName("Card")
-        form = QFormLayout(card)
-        form.setContentsMargins(16, 16, 16, 16)
-        form.setSpacing(16)
+        subtitle = QLabel("Application theme, monitoring, and preferences")
+        subtitle.setObjectName("PageSubtitle")
+        header.addWidget(subtitle)
+        layout.addLayout(header)
 
-        # Theme selector
+        # ── Appearance section ───────────────────────────────────────
+        appearance_card = QFrame()
+        appearance_card.setObjectName("Card")
+        ac = QVBoxLayout(appearance_card)
+        ac.setContentsMargins(16, 14, 16, 14)
+        ac.setSpacing(12)
+
+        sec_title = QLabel("Appearance")
+        sec_title.setObjectName("SectionTitle")
+        ac.addWidget(sec_title)
+
+        theme_row = QHBoxLayout()
+        theme_label = QLabel("Visual Theme")
+        theme_label.setStyleSheet("font-weight: 500;")
+        theme_row.addWidget(theme_label)
+        theme_row.addStretch()
+
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Dark", "Light"])
+        self.theme_combo.setFixedWidth(140)
         current_theme = self.config_mgr.config.theme.capitalize()
         idx = self.theme_combo.findText(current_theme)
         if idx >= 0:
             self.theme_combo.setCurrentIndex(idx)
         self.theme_combo.currentTextChanged.connect(self._on_theme_changed)
-        form.addRow("Visual Theme:", self.theme_combo)
+        theme_row.addWidget(self.theme_combo)
 
-        # Monitoring interval
+        ac.addLayout(theme_row)
+        layout.addWidget(appearance_card)
+
+        # ── Monitoring section ───────────────────────────────────────
+        monitoring_card = QFrame()
+        monitoring_card.setObjectName("Card")
+        mc = QVBoxLayout(monitoring_card)
+        mc.setContentsMargins(16, 14, 16, 14)
+        mc.setSpacing(12)
+
+        mon_title = QLabel("Monitoring")
+        mon_title.setObjectName("SectionTitle")
+        mc.addWidget(mon_title)
+
+        interval_row = QHBoxLayout()
+        interval_label = QLabel("Telemetry Polling Interval")
+        interval_label.setStyleSheet("font-weight: 500;")
+        interval_row.addWidget(interval_label)
+        interval_row.addStretch()
+
         self.interval_spin = QDoubleSpinBox()
         self.interval_spin.setRange(0.5, 10.0)
         self.interval_spin.setSingleStep(0.5)
-        self.interval_spin.setSuffix(" seconds")
+        self.interval_spin.setSuffix(" sec")
+        self.interval_spin.setFixedWidth(120)
         self.interval_spin.setValue(self.monitor_service.interval)
         self.interval_spin.valueChanged.connect(self._on_interval_changed)
-        form.addRow("Telemetry Polling Interval:", self.interval_spin)
+        interval_row.addWidget(self.interval_spin)
 
-        layout.addWidget(card)
+        mc.addLayout(interval_row)
+        layout.addWidget(monitoring_card)
+
         layout.addStretch()
 
     @Slot(str)
