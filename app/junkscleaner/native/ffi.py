@@ -63,10 +63,14 @@ def find_native_library() -> Path:
         Path(__file__).parent / "bin",
         # Typical CMake build outputs
         Path(__file__).parents[2] / "build" / "bin",
+        Path(__file__).parents[2] / "build" / "bin" / "Release",
+        Path(__file__).parents[2] / "build" / "bin" / "Debug",
         Path(__file__).parents[2] / "build" / "src" / "native",
         Path(__file__).parents[2] / "build" / "windows-ninja" / "bin",
         Path(__file__).parents[2] / "build" / "linux-ninja" / "bin",
         Path.cwd() / "build" / "bin",
+        Path.cwd() / "build" / "bin" / "Release",
+        Path.cwd() / "build" / "bin" / "Debug",
     ]
 
     for d in search_dirs:
