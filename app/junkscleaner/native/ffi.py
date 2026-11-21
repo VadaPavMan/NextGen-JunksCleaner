@@ -12,6 +12,8 @@ from .types import (
     CTypesCleanupItem,
     CTypesCleanupOptions,
     CTypesCleanupReport,
+    CTypesMemoryCleanParams,
+    CTypesMemoryCleanResult,
     CTypesScanOptions,
     CTypesScanResult,
     CTypesSystemSnapshot,
@@ -22,6 +24,8 @@ from .types import (
     JcCleanupItem,
     JcCleanupReport,
     JcDiskInfo,
+    JcMemoryCleanResult,
+    JcMemoryOperationFlags,
     JcOsFamily,
     JcRiskLevel,
     JcScanResult,
@@ -138,6 +142,13 @@ class NativeCore:
             ctypes.POINTER(CTypesCleanupReport),
         ]
         self._jc_execute_cleanup.restype = ctypes.c_int
+
+        self._jc_execute_memory_clean = self._lib.jc_execute_memory_clean
+        self._jc_execute_memory_clean.argtypes = [
+            ctypes.POINTER(CTypesMemoryCleanParams),
+            ctypes.POINTER(CTypesMemoryCleanResult),
+        ]
+        self._jc_execute_memory_clean.restype = ctypes.c_int
 
         self._jc_status_to_string = self._lib.jc_status_to_string
         self._jc_status_to_string.argtypes = [ctypes.c_int]
@@ -345,6 +356,36 @@ class NativeCore:
             failed_count=report.failed_count,
             actual_bytes_deleted=report.actual_bytes_deleted,
             was_cancelled=bool(report.was_cancelled),
+        )
+
+    def execute_memory_clean(
+        self,
+        operations_mask: JcMemoryOperationFlags | int,
+    ) -> JcMemoryCleanResult:
+        """Execute memory optimization operations (working set, cache, standby, modified)."""
+        params = CTypesMemoryCleanParams()
+        params.struct_size = ctypes.sizeof(CTypesMemoryCleanParams)
+        params.abi_version = JC_CURRENT_ABI_VERSION
+        params.operations_mask = int(operations_mask)
+
+        res = CTypesMemoryCleanResult()
+        res.struct_size = ctypes.sizeof(CTypesMemoryCleanResult)
+        res.abi_version = JC_CURRENT_ABI_VERSION
+
+        ret = self._jc_execute_memory_clean(ctypes.byref(params), ctypes.byref(res))
+        status = JcStatus(ret)
+        if status not in (JcStatus.OK, JcStatus.ERROR_PARTIAL_SUCCESS):
+            raise JcNativeError(status, self.get_status_message(status))
+
+        return JcMemoryCleanResult(
+            before_used_bytes=res.before_used_bytes,
+            after_used_bytes=res.after_used_bytes,
+            bytes_reclaimed=res.bytes_reclaimed,
+            operations_attempted=JcMemoryOperationFlags(res.operations_attempted),
+            operations_succeeded=JcMemoryOperationFlags(res.operations_succeeded),
+            operations_failed=JcMemoryOperationFlags(res.operations_failed),
+            processes_trimmed=res.processes_trimmed,
+            processes_failed=res.processes_failed,
         )
 
 

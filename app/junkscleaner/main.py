@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QApplication
 from junkscleaner.core.config import ConfigManager
 from junkscleaner.native.ffi import get_native_core
 from junkscleaner.services.cleaner import JunkCleanerService
+from junkscleaner.services.memory import MemoryCleanerService
 from junkscleaner.services.monitor import SystemMonitorService
 from junkscleaner.views.main_window import MainWindow
 
@@ -31,12 +32,14 @@ def main() -> int:
         interval_seconds=config_mgr.config.monitoring_interval_seconds,
     )
     cleaner_service = JunkCleanerService(native_core=native_core)
+    memory_service = MemoryCleanerService(native_core=native_core)
 
     window = MainWindow(
         native_core=native_core,
         config_mgr=config_mgr,
         monitor_service=monitor_service,
         cleaner_service=cleaner_service,
+        memory_service=memory_service,
     )
     window.show()
 

@@ -7,6 +7,16 @@ from pathlib import Path
 
 import pytest
 from junkscleaner.native.ffi import NativeCore, find_native_library
+from PySide6.QtWidgets import QApplication
+
+
+@pytest.fixture(scope="session")
+def qapp() -> QApplication:
+    """Ensure a single shared QApplication instance exists for GUI tests."""
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    return app
 
 
 @pytest.fixture(scope="session")

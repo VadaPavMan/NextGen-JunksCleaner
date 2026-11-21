@@ -50,13 +50,13 @@ Roadmap is milestone-based. Do not begin later milestones by building UI placeho
 **Exit:** Bounded resource usage and tested filesystem boundary handling.
 
 ## M5 — Advanced memory operations research
-- [ ] Research each Windows operation and API support.
-- [ ] Research Linux semantics; do not assume drop_caches is beneficial.
-- [ ] Define operation-specific risk, privilege and UX.
-- [ ] Benchmark on controlled workloads.
-- [ ] Implement only justified, safe, testable operations.
+- [x] Research each Windows operation and API support.
+- [x] Research Linux semantics; do not assume drop_caches is beneficial.
+- [x] Define operation-specific risk, privilege and UX.
+- [x] Benchmark on controlled workloads.
+- [x] Implement only justified, safe, testable operations.
 
-**Exit:** Evidence-based feature decision; unsupported operations remain unavailable.
+**Exit:** Evidence-based feature decision; unsupported operations remain unavailable. [PASSED]
 
 ## M6 — Packaging and release
 - [ ] Windows portable/package build.

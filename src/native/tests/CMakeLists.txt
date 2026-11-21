@@ -15,3 +15,9 @@ add_executable(test_safe_cleanup
 )
 target_link_libraries(test_safe_cleanup PRIVATE junkscleaner_native)
 add_test(NAME test_safe_cleanup COMMAND test_safe_cleanup)
+
+add_executable(test_memory_clean
+    test_memory_clean.cpp
+)
+target_link_libraries(test_memory_clean PRIVATE junkscleaner_native)
+add_test(NAME test_memory_clean COMMAND test_memory_clean)

@@ -5,10 +5,12 @@ from junkscleaner.native.ffi import NativeCore
 from junkscleaner.native.types import JcSystemSnapshot
 from junkscleaner.resources.theme import get_stylesheet
 from junkscleaner.services.cleaner import JunkCleanerService
+from junkscleaner.services.memory import MemoryCleanerService
 from junkscleaner.services.monitor import SystemMonitorService
 from junkscleaner.views.activity_page import ActivityPage
 from junkscleaner.views.cleaner_page import CleanerPage
 from junkscleaner.views.dashboard_page import DashboardPage
+from junkscleaner.views.memory_page import MemoryPage
 from junkscleaner.views.settings_page import SettingsPage
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtGui import QCloseEvent
@@ -40,6 +42,7 @@ class MainWindow(QMainWindow):
         config_mgr: ConfigManager,
         monitor_service: SystemMonitorService,
         cleaner_service: JunkCleanerService,
+        memory_service: MemoryCleanerService | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -47,6 +50,7 @@ class MainWindow(QMainWindow):
         self.config_mgr = config_mgr
         self.monitor_service = monitor_service
         self.cleaner_service = cleaner_service
+        self.memory_service = memory_service or MemoryCleanerService(native_core=self.native_core)
 
         self.setWindowTitle("JunksCleaner - NextGen System Utility")
         self.resize(1050, 680)
@@ -60,6 +64,7 @@ class MainWindow(QMainWindow):
 
         # Connect telemetry bridge
         self.bridge.snapshot_ready.connect(self.dashboard_page.update_snapshot)
+        self.bridge.snapshot_ready.connect(self.memory_page.update_snapshot)
         self.monitor_service.subscribe(self._on_monitor_snapshot)
         self.monitor_service.start()
 
@@ -90,11 +95,13 @@ class MainWindow(QMainWindow):
 
         self.btn_dashboard = self._create_nav_button("Dashboard", 0)
         self.btn_cleaner = self._create_nav_button("Junk Cleaner", 1)
-        self.btn_activity = self._create_nav_button("Activity", 2)
-        self.btn_settings = self._create_nav_button("Settings", 3)
+        self.btn_memory = self._create_nav_button("Clean Memory", 2)
+        self.btn_activity = self._create_nav_button("Activity", 3)
+        self.btn_settings = self._create_nav_button("Settings", 4)
 
         sidebar_layout.addWidget(self.btn_dashboard)
         sidebar_layout.addWidget(self.btn_cleaner)
+        sidebar_layout.addWidget(self.btn_memory)
         sidebar_layout.addWidget(self.btn_activity)
         sidebar_layout.addWidget(self.btn_settings)
         sidebar_layout.addStretch()
@@ -112,6 +119,7 @@ class MainWindow(QMainWindow):
 
         self.dashboard_page = DashboardPage(capabilities=capabilities)
         self.cleaner_page = CleanerPage(service=self.cleaner_service)
+        self.memory_page = MemoryPage(service=self.memory_service)
         self.activity_page = ActivityPage(service=self.cleaner_service)
         self.settings_page = SettingsPage(
             config_mgr=self.config_mgr,
@@ -119,10 +127,12 @@ class MainWindow(QMainWindow):
         )
 
         self.cleaner_page.cleanup_completed.connect(lambda _: self.activity_page.refresh())
+        self.memory_page.memory_cleaned.connect(lambda _: self.activity_page.refresh())
         self.settings_page.theme_changed.connect(self._apply_theme)
 
         self.stack.addWidget(self.dashboard_page)
         self.stack.addWidget(self.cleaner_page)
+        self.stack.addWidget(self.memory_page)
         self.stack.addWidget(self.activity_page)
         self.stack.addWidget(self.settings_page)
 

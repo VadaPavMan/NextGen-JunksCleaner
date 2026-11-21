@@ -225,6 +225,44 @@ typedef struct jc_cleanup_report_s {
     uint32_t reserved;                 /* Alignment */
 } jc_cleanup_report_t;
 
+/**
+ * Memory cleanup operation flags.
+ */
+typedef enum jc_memory_operation_flags_e {
+    JC_MEM_OP_NONE             = 0,
+    JC_MEM_OP_WORKING_SETS     = (1U << 0), /* Trim working sets of running processes */
+    JC_MEM_OP_SYSTEM_CACHE     = (1U << 1), /* Flush system file cache / system working set */
+    JC_MEM_OP_STANDBY_LIST     = (1U << 2), /* Purge standby page list */
+    JC_MEM_OP_MODIFIED_LIST    = (1U << 3)  /* Flush modified page list to pagefile/disk */
+} jc_memory_operation_flags_t;
+
+/**
+ * Memory cleanup execution parameters.
+ */
+typedef struct jc_memory_clean_params_s {
+    uint32_t struct_size;          /* Must be sizeof(jc_memory_clean_params_t) */
+    uint32_t abi_version;          /* Must match JC_CURRENT_ABI_VERSION */
+    uint32_t operations_mask;      /* Bitmask of jc_memory_operation_flags_t */
+    uint32_t reserved;             /* Alignment padding */
+} jc_memory_clean_params_t;
+
+/**
+ * Memory cleanup execution result report.
+ */
+typedef struct jc_memory_clean_result_s {
+    uint32_t struct_size;              /* Must be sizeof(jc_memory_clean_result_t) */
+    uint32_t abi_version;              /* Must match JC_CURRENT_ABI_VERSION */
+    uint64_t before_used_bytes;        /* Used memory before cleaning */
+    uint64_t after_used_bytes;         /* Used memory after cleaning */
+    uint64_t bytes_reclaimed;          /* Bytes reclaimed (0 if increased or unchanged) */
+    uint32_t operations_attempted;     /* Mask of attempted operations */
+    uint32_t operations_succeeded;     /* Mask of succeeded operations */
+    uint32_t operations_failed;        /* Mask of failed operations */
+    uint32_t processes_trimmed;        /* Count of processes whose working sets were trimmed */
+    uint32_t processes_failed;         /* Count of processes that could not be trimmed */
+    uint32_t reserved;                 /* Alignment padding */
+} jc_memory_clean_result_t;
+
 #ifdef __cplusplus
 }
 #endif

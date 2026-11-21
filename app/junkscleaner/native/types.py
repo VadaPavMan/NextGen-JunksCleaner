@@ -407,3 +407,69 @@ class JcCleanupReport:
     @property
     def actual_deleted_display(self) -> str:
         return format_bytes(self.actual_bytes_deleted)
+
+
+class JcMemoryOperationFlags(IntFlag):
+    """Memory cleanup operation flags matching jc_memory_operation_flags_t."""
+
+    NONE = 0
+    WORKING_SETS = 1 << 0
+    SYSTEM_CACHE = 1 << 1
+    STANDBY_LIST = 1 << 2
+    MODIFIED_LIST = 1 << 3
+
+
+class CTypesMemoryCleanParams(ctypes.Structure):
+    """Internal ctypes structure for jc_memory_clean_params_t."""
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("operations_mask", ctypes.c_uint32),
+        ("reserved", ctypes.c_uint32),
+    ]
+
+
+class CTypesMemoryCleanResult(ctypes.Structure):
+    """Internal ctypes structure for jc_memory_clean_result_t."""
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("before_used_bytes", ctypes.c_uint64),
+        ("after_used_bytes", ctypes.c_uint64),
+        ("bytes_reclaimed", ctypes.c_uint64),
+        ("operations_attempted", ctypes.c_uint32),
+        ("operations_succeeded", ctypes.c_uint32),
+        ("operations_failed", ctypes.c_uint32),
+        ("processes_trimmed", ctypes.c_uint32),
+        ("processes_failed", ctypes.c_uint32),
+        ("reserved", ctypes.c_uint32),
+    ]
+
+
+@dataclass(frozen=True)
+class JcMemoryCleanResult:
+    """Idiomatic Python report of memory optimization operations."""
+
+    before_used_bytes: int
+    after_used_bytes: int
+    bytes_reclaimed: int
+    operations_attempted: JcMemoryOperationFlags
+    operations_succeeded: JcMemoryOperationFlags
+    operations_failed: JcMemoryOperationFlags
+    processes_trimmed: int
+    processes_failed: int
+
+    @property
+    def bytes_reclaimed_display(self) -> str:
+        return format_bytes(self.bytes_reclaimed)
+
+    @property
+    def before_used_display(self) -> str:
+        return format_bytes(self.before_used_bytes)
+
+    @property
+    def after_used_display(self) -> str:
+        return format_bytes(self.after_used_bytes)
+

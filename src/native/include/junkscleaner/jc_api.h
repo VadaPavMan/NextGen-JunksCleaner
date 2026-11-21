@@ -85,6 +85,21 @@ JC_API jc_status_t jc_execute_cleanup(
 );
 
 /**
+ * Execute memory optimization and cache reclamation operations.
+ *
+ * @param params Memory cleaning configuration (operations mask).
+ * @param out_result Output pointer receiving before/after metrics and operation results.
+ * @return JC_OK on success, JC_ERROR_INVALID_ARGUMENT on bad arguments or struct_size,
+ *         JC_ERROR_ABI_MISMATCH if abi_version doesn't match,
+ *         JC_ERROR_PERMISSION_DENIED if all requested ops require unheld privileges,
+ *         or JC_ERROR_PARTIAL_SUCCESS if some operations succeeded while others failed.
+ */
+JC_API jc_status_t jc_execute_memory_clean(
+    const jc_memory_clean_params_t* params,
+    jc_memory_clean_result_t* out_result
+);
+
+/**
  * Return a static, human-readable string description for a status code.
  *
  * @param status The status enum value.

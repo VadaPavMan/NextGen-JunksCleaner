@@ -3,7 +3,6 @@
 import os
 from pathlib import Path
 
-import pytest
 from junkscleaner.core.config import ConfigManager
 from junkscleaner.native.ffi import NativeCore
 from junkscleaner.native.types import (
@@ -24,15 +23,6 @@ from PySide6.QtWidgets import QApplication
 
 # Ensure offscreen rendering for headless/test environments
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
-
-
-@pytest.fixture(scope="session")
-def qapp() -> QApplication:
-    """Ensure a single shared QApplication instance exists for GUI tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    return app
 
 
 def test_config_persistence(safe_temp_workspace: Path) -> None:
@@ -182,20 +172,24 @@ def test_main_window_navigation(
     )
 
     try:
-        assert window.stack.count() == 4
+        assert window.stack.count() == 5
         assert window.stack.currentIndex() == 0  # Dashboard
 
         # Navigate to Cleaner
         window.btn_cleaner.click()
         assert window.stack.currentIndex() == 1
 
+        # Navigate to Clean Memory
+        window.btn_memory.click()
+        assert window.stack.currentIndex() == 2
+
         # Navigate to Activity
         window.btn_activity.click()
-        assert window.stack.currentIndex() == 2
+        assert window.stack.currentIndex() == 3
 
         # Navigate to Settings
         window.btn_settings.click()
-        assert window.stack.currentIndex() == 3
+        assert window.stack.currentIndex() == 4
 
         # Navigate back to Dashboard
         window.btn_dashboard.click()
