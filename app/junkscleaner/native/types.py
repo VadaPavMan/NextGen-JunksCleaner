@@ -417,6 +417,10 @@ class JcMemoryOperationFlags(IntFlag):
     SYSTEM_CACHE = 1 << 1
     STANDBY_LIST = 1 << 2
     MODIFIED_LIST = 1 << 3
+    COMBINED_LIST = 1 << 4
+    REGISTRY_CACHE = 1 << 5
+    MODIFIED_FILE_CACHE = 1 << 6
+    STANDBY_LOW_PRIORITY = 1 << 7
 
 
 class CTypesMemoryCleanParams(ctypes.Structure):

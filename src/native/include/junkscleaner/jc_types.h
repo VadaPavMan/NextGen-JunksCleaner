@@ -229,11 +229,15 @@ typedef struct jc_cleanup_report_s {
  * Memory cleanup operation flags.
  */
 typedef enum jc_memory_operation_flags_e {
-    JC_MEM_OP_NONE             = 0,
-    JC_MEM_OP_WORKING_SETS     = (1U << 0), /* Trim working sets of running processes */
-    JC_MEM_OP_SYSTEM_CACHE     = (1U << 1), /* Flush system file cache / system working set */
-    JC_MEM_OP_STANDBY_LIST     = (1U << 2), /* Purge standby page list */
-    JC_MEM_OP_MODIFIED_LIST    = (1U << 3)  /* Flush modified page list to pagefile/disk */
+    JC_MEM_OP_NONE                  = 0,
+    JC_MEM_OP_WORKING_SETS          = (1U << 0), /* Trim working sets of running processes */
+    JC_MEM_OP_SYSTEM_CACHE          = (1U << 1), /* Flush system file cache / system working set */
+    JC_MEM_OP_STANDBY_LIST          = (1U << 2), /* Purge standby page list */
+    JC_MEM_OP_MODIFIED_LIST         = (1U << 3), /* Flush modified page list to pagefile/disk */
+    JC_MEM_OP_COMBINED_LIST         = (1U << 4), /* Combine identical physical memory pages (deduplication) */
+    JC_MEM_OP_REGISTRY_CACHE        = (1U << 5), /* Flush registry reconciliation cache / hive buffers */
+    JC_MEM_OP_MODIFIED_FILE_CACHE   = (1U << 6), /* Flush volume write order & file buffers */
+    JC_MEM_OP_STANDBY_LOW_PRIORITY  = (1U << 7)  /* Purge only low-priority standby pages */
 } jc_memory_operation_flags_t;
 
 /**

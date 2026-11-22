@@ -104,6 +104,23 @@ int main() {
         std::cout << "  - Processes Trimmed: " << res.processes_trimmed << " (Failed: " << res.processes_failed << ")" << std::endl;
         std::cout << "  - Reclaimed: " << (res.bytes_reclaimed / (1024 * 1024)) << " MB" << std::endl;
     }
+
+    // 6. Multi-target memory operation flags
+    {
+        jc_memory_clean_params_t params{};
+        params.struct_size = sizeof(jc_memory_clean_params_t);
+        params.abi_version = JC_CURRENT_ABI_VERSION;
+        params.operations_mask = JC_MEM_OP_WORKING_SETS | JC_MEM_OP_MODIFIED_FILE_CACHE | JC_MEM_OP_COMBINED_LIST;
+
+        jc_memory_clean_result_t res{};
+        res.struct_size = sizeof(jc_memory_clean_result_t);
+        res.abi_version = JC_CURRENT_ABI_VERSION;
+
+        jc_status_t status = jc_execute_memory_clean(&params, &res);
+        TEST_ASSERT(status == JC_OK || status == JC_ERROR_PARTIAL_SUCCESS, "Multi-target clean should succeed or return partial success");
+        TEST_ASSERT(res.operations_attempted == (JC_MEM_OP_WORKING_SETS | JC_MEM_OP_MODIFIED_FILE_CACHE | JC_MEM_OP_COMBINED_LIST), "Operations attempted must match request");
+        std::cout << "  - Multi-target memory clean succeeded (succeeded mask: " << res.operations_succeeded << ")" << std::endl;
+    }
 #elif defined(__linux__)
     // On Linux, sync/modified list is supported unprivileged
     {

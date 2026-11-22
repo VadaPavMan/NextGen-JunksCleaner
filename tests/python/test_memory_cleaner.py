@@ -146,5 +146,55 @@ def test_memory_page_ui(qapp: QApplication, native_core: NativeCore) -> None:
         assert "1.00 GiB" in page.res_reclaimed_label.text()
         assert "Trimmed: 10" in page.res_processes.text()
 
+        # Test select all and clear all
+        page._clear_all_targets()
+        assert page._get_selected_mask() == int(JcMemoryOperationFlags.NONE)
+
+        page._select_all_targets()
+        all_mask = page._get_selected_mask()
+        assert (all_mask & JcMemoryOperationFlags.WORKING_SETS) != 0
+        assert (all_mask & JcMemoryOperationFlags.SYSTEM_CACHE) != 0
+        assert (all_mask & JcMemoryOperationFlags.STANDBY_LIST) != 0
+        assert (all_mask & JcMemoryOperationFlags.MODIFIED_LIST) != 0
+        assert (all_mask & JcMemoryOperationFlags.COMBINED_LIST) != 0
+        assert (all_mask & JcMemoryOperationFlags.REGISTRY_CACHE) != 0
+        assert (all_mask & JcMemoryOperationFlags.MODIFIED_FILE_CACHE) != 0
+
     finally:
         page.close()
+
+
+def test_advanced_memory_flags_definition() -> None:
+    """Verify that all advanced memory operation flags from WinMemoryCleaner are defined."""
+    assert JcMemoryOperationFlags.WORKING_SETS == 1 << 0
+    assert JcMemoryOperationFlags.SYSTEM_CACHE == 1 << 1
+    assert JcMemoryOperationFlags.STANDBY_LIST == 1 << 2
+    assert JcMemoryOperationFlags.MODIFIED_LIST == 1 << 3
+    assert JcMemoryOperationFlags.COMBINED_LIST == 1 << 4
+    assert JcMemoryOperationFlags.REGISTRY_CACHE == 1 << 5
+    assert JcMemoryOperationFlags.MODIFIED_FILE_CACHE == 1 << 6
+    assert JcMemoryOperationFlags.STANDBY_LOW_PRIORITY == 1 << 7
+
+
+def test_advanced_memory_clean_execution(native_core: NativeCore) -> None:
+    """Verify executing multi-target memory cleaning via native core."""
+    import platform
+
+    service = MemoryCleanerService(native_core=native_core)
+    if platform.system() == "Windows":
+        ops = (
+            JcMemoryOperationFlags.WORKING_SETS
+            | JcMemoryOperationFlags.MODIFIED_FILE_CACHE
+            | JcMemoryOperationFlags.COMBINED_LIST
+        )
+    else:
+        ops = (
+            JcMemoryOperationFlags.MODIFIED_LIST
+            | JcMemoryOperationFlags.MODIFIED_FILE_CACHE
+        )
+
+    res = service.clean(ops)
+    assert isinstance(res, JcMemoryCleanResult)
+    assert res.before_used_bytes > 0
+    assert res.after_used_bytes > 0
+    assert (res.operations_attempted & ops) == ops

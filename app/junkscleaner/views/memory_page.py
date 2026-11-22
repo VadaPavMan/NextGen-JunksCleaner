@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
 
 
 class MemoryPage(QWidget):
-    """Interactive Clean Memory page for RAM optimization."""
+    """Interactive Clean Memory page for RAM optimization inspired by WinMemoryCleaner."""
 
     memory_cleaned = Signal(object)  # Emits JcMemoryCleanResult
 
@@ -51,7 +51,7 @@ class MemoryPage(QWidget):
         title.setObjectName("PageTitle")
         header_text.addWidget(title)
 
-        subtitle = QLabel("RAM optimization and cache reclamation")
+        subtitle = QLabel("Safe RAM optimization & cache reclamation via native NT engine")
         subtitle.setObjectName("PageSubtitle")
         header_text.addWidget(subtitle)
 
@@ -60,13 +60,32 @@ class MemoryPage(QWidget):
 
         # Privilege badge
         if self._is_elevated:
-            elev_label = QLabel("Administrator")
+            elev_label = QLabel("Administrator Mode")
             elev_label.setObjectName("BadgeGreen")
         else:
-            elev_label = QLabel("Standard User")
-            elev_label.setObjectName("BadgeMuted")
+            elev_label = QLabel("Standard User Mode")
+            elev_label.setObjectName("BadgeAmber")
         header_row.addWidget(elev_label)
         layout.addLayout(header_row)
+
+        # Non-elevated tip banner
+        if not self._is_elevated:
+            tip_frame = QFrame()
+            tip_frame.setObjectName("OptionCard")
+            tip_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            tl_tip = QHBoxLayout(tip_frame)
+            tl_tip.setContentsMargins(14, 10, 14, 10)
+            tip_icon = QLabel("\u2139")
+            tip_icon.setStyleSheet("font-size: 16px; font-weight: 700; color: #f39c12;")
+            tip_label = QLabel(
+                "Tip: To reclaim maximum memory (purging cached standby pages & file cache), "
+                "run JunksCleaner as Administrator."
+            )
+            tip_label.setStyleSheet("font-size: 12px; color: #a09d98;")
+            tip_label.setWordWrap(True)
+            tl_tip.addWidget(tip_icon)
+            tl_tip.addWidget(tip_label, 1)
+            layout.addWidget(tip_frame)
 
         # ── Live RAM telemetry ───────────────────────────────────────
         self.telemetry_card = QFrame()
@@ -76,7 +95,7 @@ class MemoryPage(QWidget):
         tl.setContentsMargins(16, 14, 16, 14)
         tl.setSpacing(10)
 
-        tl_title = QLabel("PHYSICAL RAM")
+        tl_title = QLabel("PHYSICAL RAM UTILIZATION")
         tl_title.setObjectName("CardTitle")
         tl.addWidget(tl_title)
 
@@ -88,7 +107,7 @@ class MemoryPage(QWidget):
         self.lbl_avail_ram = QLabel("Available: --")
         self.lbl_avail_ram.setStyleSheet("font-size: 14px; font-weight: 600;")
         self.lbl_cached_ram = QLabel("Cached: --")
-        self.lbl_cached_ram.setStyleSheet("font-size: 14px; font-weight: 600;")
+        self.lbl_cached_ram.setStyleSheet("font-size: 14px; font-weight: 600; color: #3498db;")
         self.lbl_total_ram = QLabel("Total: --")
         self.lbl_total_ram.setStyleSheet("font-size: 14px; font-weight: 500;")
 
@@ -103,7 +122,7 @@ class MemoryPage(QWidget):
         self.memory_progress.setRange(0, 100)
         self.memory_progress.setValue(0)
         self.memory_progress.setTextVisible(True)
-        self.memory_progress.setFixedHeight(16)
+        self.memory_progress.setFixedHeight(18)
         tl.addWidget(self.memory_progress)
 
         layout.addWidget(self.telemetry_card)
@@ -116,43 +135,87 @@ class MemoryPage(QWidget):
         tc.setContentsMargins(16, 14, 16, 14)
         tc.setSpacing(8)
 
+        # Targets card header with selection actions
+        th_row = QHBoxLayout()
         tc_title = QLabel("OPTIMIZATION TARGETS")
         tc_title.setObjectName("CardTitle")
-        tc.addWidget(tc_title)
+        th_row.addWidget(tc_title)
+        th_row.addStretch()
 
-        # -- Target: Working Sets
+        btn_select_all = QPushButton("Select All")
+        btn_select_all.setObjectName("SecondaryButton")
+        btn_select_all.setFixedHeight(26)
+        btn_select_all.clicked.connect(self._select_all_targets)
+        th_row.addWidget(btn_select_all)
+
+        btn_clear_all = QPushButton("Clear All")
+        btn_clear_all.setObjectName("SecondaryButton")
+        btn_clear_all.setFixedHeight(26)
+        btn_clear_all.clicked.connect(self._clear_all_targets)
+        th_row.addWidget(btn_clear_all)
+
+        tc.addLayout(th_row)
+
+        # 1. Process Working Sets
         self.cb_working_sets = QCheckBox("Process Working Sets")
         self.cb_working_sets.setChecked(True)
         tc.addWidget(self._make_target_row(
             self.cb_working_sets,
-            "Trims unreferenced pages back to the memory manager.",
+            "Trims unreferenced working set pages across running processes back to memory manager.",
             "Standard",
         ))
 
-        # -- Target: System File Cache
+        # 2. System File Cache
         self.cb_system_cache = QCheckBox("System File Cache")
-        self.cb_system_cache.setChecked(self._is_elevated)
+        self.cb_system_cache.setChecked(True)
         tc.addWidget(self._make_target_row(
             self.cb_system_cache,
-            "Flushes system working set and file cache via SetSystemFileCacheSize.",
+            "Flushes system working set and file system cache via NT kernel and Win32 interfaces.",
             "Admin",
         ))
 
-        # -- Target: Standby Page List
+        # 3. Standby Page List
         self.cb_standby_list = QCheckBox("Standby Page List")
-        self.cb_standby_list.setChecked(self._is_elevated)
+        self.cb_standby_list.setChecked(True)
         tc.addWidget(self._make_target_row(
             self.cb_standby_list,
-            "Purges standby pages into free memory. May increase disk I/O.",
+            "Purges cached standby pages into free RAM (reclaims gigabytes of cached memory).",
             "Admin",
         ))
 
-        # -- Target: Modified Page List
+        # 4. Modified Page List
         self.cb_modified_list = QCheckBox("Modified Page List")
-        self.cb_modified_list.setChecked(False)
+        self.cb_modified_list.setChecked(True)
         tc.addWidget(self._make_target_row(
             self.cb_modified_list,
-            "Flushes dirty pages to disk backing store.",
+            "Flushes dirty modified memory pages to the disk backing store / pagefile.",
+            "Admin",
+        ))
+
+        # 5. Combined Page List
+        self.cb_combined_list = QCheckBox("Combined Page List")
+        self.cb_combined_list.setChecked(True)
+        tc.addWidget(self._make_target_row(
+            self.cb_combined_list,
+            "Combines and deduplicates identical physical memory pages (Windows 8.1 / 10+).",
+            "Admin",
+        ))
+
+        # 6. Registry Cache
+        self.cb_registry_cache = QCheckBox("Registry Cache")
+        self.cb_registry_cache.setChecked(True)
+        tc.addWidget(self._make_target_row(
+            self.cb_registry_cache,
+            "Flushes registry reconciliation buffers and hive working memory.",
+            "Admin",
+        ))
+
+        # 7. Modified File Cache
+        self.cb_modified_file_cache = QCheckBox("Modified File Cache")
+        self.cb_modified_file_cache.setChecked(True)
+        tc.addWidget(self._make_target_row(
+            self.cb_modified_file_cache,
+            "Flushes volume write order & file buffers across fixed drives via disk IOCTLs.",
             "Admin",
         ))
 
@@ -160,7 +223,7 @@ class MemoryPage(QWidget):
 
         # ── Action row ───────────────────────────────────────────────
         action_row = QHBoxLayout()
-        action_row.setSpacing(10)
+        action_row.setSpacing(12)
 
         self.btn_clean = QPushButton("Clean Selected Targets")
         self.btn_clean.setObjectName("PrimaryButton")
@@ -168,7 +231,7 @@ class MemoryPage(QWidget):
         self.btn_clean.clicked.connect(self._on_clean_clicked)
         action_row.addWidget(self.btn_clean)
 
-        self.status_label = QLabel("Select targets and click Clean")
+        self.status_label = QLabel("Select targets and click Clean Selected Targets")
         self.status_label.setObjectName("StatusLabel")
         action_row.addWidget(self.status_label)
         action_row.addStretch()
@@ -182,7 +245,7 @@ class MemoryPage(QWidget):
         self.result_card.setVisible(False)
         rl = QVBoxLayout(self.result_card)
         rl.setContentsMargins(16, 12, 16, 12)
-        rl.setSpacing(4)
+        rl.setSpacing(6)
 
         res_title = QLabel("OPTIMIZATION REPORT")
         res_title.setObjectName("CardTitle")
@@ -195,10 +258,10 @@ class MemoryPage(QWidget):
         metrics_row = QHBoxLayout()
         metrics_row.setSpacing(16)
         self.res_reclaimed_label = QLabel("Reclaimed: --")
-        self.res_reclaimed_label.setStyleSheet("font-size: 18px; font-weight: 800;")
+        self.res_reclaimed_label.setStyleSheet("font-size: 18px; font-weight: 800; color: #2ecc71;")
         self.res_before_after = QLabel("Before: -- | After: --")
         self.res_before_after.setStyleSheet("font-size: 13px; font-weight: 500;")
-        self.res_processes = QLabel("Trimmed: --")
+        self.res_processes = QLabel("Processes Trimmed: --")
         self.res_processes.setStyleSheet("font-size: 13px; font-weight: 500;")
 
         metrics_row.addWidget(self.res_reclaimed_label)
@@ -215,20 +278,20 @@ class MemoryPage(QWidget):
         """Build a single optimization target row card."""
         card = QFrame()
         card.setObjectName("OptionCard")
-        card.setMinimumHeight(68)
+        card.setMinimumHeight(60)
         card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         outer = QVBoxLayout(card)
-        outer.setContentsMargins(12, 8, 12, 8)
-        outer.setSpacing(4)
+        outer.setContentsMargins(12, 6, 12, 6)
+        outer.setSpacing(2)
 
         top_row = QHBoxLayout()
-        checkbox.setStyleSheet("font-weight: 600;")
+        checkbox.setStyleSheet("font-weight: 600; font-size: 14px;")
         top_row.addWidget(checkbox)
         top_row.addStretch()
 
         if level == "Admin":
-            badge = QLabel("Admin Required")
+            badge = QLabel("Admin Recommended")
             badge.setObjectName("BadgeAmber")
         else:
             badge = QLabel("Standard User")
@@ -238,11 +301,31 @@ class MemoryPage(QWidget):
 
         desc_label = QLabel(description)
         desc_label.setObjectName("MetricSubtext")
-        desc_label.setStyleSheet("margin-left: 24px;")
+        desc_label.setStyleSheet("margin-left: 24px; font-size: 12px; color: #a09d98;")
         desc_label.setWordWrap(True)
         outer.addWidget(desc_label)
 
         return card
+
+    def _select_all_targets(self) -> None:
+        """Select all optimization target checkboxes."""
+        self.cb_working_sets.setChecked(True)
+        self.cb_system_cache.setChecked(True)
+        self.cb_standby_list.setChecked(True)
+        self.cb_modified_list.setChecked(True)
+        self.cb_combined_list.setChecked(True)
+        self.cb_registry_cache.setChecked(True)
+        self.cb_modified_file_cache.setChecked(True)
+
+    def _clear_all_targets(self) -> None:
+        """Deselect all optimization target checkboxes."""
+        self.cb_working_sets.setChecked(False)
+        self.cb_system_cache.setChecked(False)
+        self.cb_standby_list.setChecked(False)
+        self.cb_modified_list.setChecked(False)
+        self.cb_combined_list.setChecked(False)
+        self.cb_registry_cache.setChecked(False)
+        self.cb_modified_file_cache.setChecked(False)
 
     @Slot(object)
     def update_snapshot(self, snap: JcSystemSnapshot) -> None:
@@ -280,6 +363,12 @@ class MemoryPage(QWidget):
             mask |= JcMemoryOperationFlags.STANDBY_LIST
         if self.cb_modified_list.isChecked():
             mask |= JcMemoryOperationFlags.MODIFIED_LIST
+        if self.cb_combined_list.isChecked():
+            mask |= JcMemoryOperationFlags.COMBINED_LIST
+        if self.cb_registry_cache.isChecked():
+            mask |= JcMemoryOperationFlags.REGISTRY_CACHE
+        if self.cb_modified_file_cache.isChecked():
+            mask |= JcMemoryOperationFlags.MODIFIED_FILE_CACHE
         return int(mask)
 
     @Slot()
@@ -293,27 +382,8 @@ class MemoryPage(QWidget):
             )
             return
 
-        needs_admin = (
-            (mask & JcMemoryOperationFlags.SYSTEM_CACHE)
-            or (mask & JcMemoryOperationFlags.STANDBY_LIST)
-            or (mask & JcMemoryOperationFlags.MODIFIED_LIST)
-        )
-        if needs_admin and not self._is_elevated:
-            ret = QMessageBox.question(
-                self,
-                "Administrator Rights Recommended",
-                "Some selected operations require Administrator privileges "
-                "(System Cache, Standby List, Modified List).\n\n"
-                "In standard mode these may be skipped or denied.\n\n"
-                "Proceed anyway?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
-            if ret != QMessageBox.Yes:
-                return
-
         self.btn_clean.setEnabled(False)
-        self.status_label.setText("Optimizing\u2026")
+        self.status_label.setText("Optimizing system memory\u2026")
 
         self._worker = MemoryCleanWorker(service=self.service, operations=mask, parent=self)
         self._worker.clean_finished.connect(self._on_clean_finished)
@@ -323,15 +393,15 @@ class MemoryPage(QWidget):
     @Slot(object)
     def _on_clean_finished(self, result: JcMemoryCleanResult) -> None:
         self.btn_clean.setEnabled(True)
-        self.status_label.setText(f"Done \u2014 reclaimed {result.bytes_reclaimed_display}")
+        self.status_label.setText(f"Completed \u2014 reclaimed {result.bytes_reclaimed_display}.")
 
         self.result_card.setVisible(True)
         self.res_reclaimed_label.setText(f"Reclaimed: {result.bytes_reclaimed_display}")
         self.res_before_after.setText(
-            f"Before: {result.before_used_display}  |  After: {result.after_used_display}"
+            f"Before: {result.before_used_display} | After: {result.after_used_display}"
         )
         self.res_processes.setText(
-            f"Trimmed: {result.processes_trimmed}  (Skipped: {result.processes_failed})"
+            f"Processes Trimmed: {result.processes_trimmed} (Skipped: {result.processes_failed})"
         )
 
         self.memory_cleaned.emit(result)

@@ -28,9 +28,12 @@ jc_status_t execute_platform_memory_clean(
     }
 
     // 2 & 3. Page Cache / Standby / Inactive Cache: drop_caches (requires root)
-    if ((operations_mask & JC_MEM_OP_SYSTEM_CACHE) || (operations_mask & JC_MEM_OP_STANDBY_LIST)) {
+    if ((operations_mask & JC_MEM_OP_SYSTEM_CACHE) ||
+        (operations_mask & JC_MEM_OP_STANDBY_LIST) ||
+        (operations_mask & JC_MEM_OP_STANDBY_LOW_PRIORITY)) {
         if (operations_mask & JC_MEM_OP_SYSTEM_CACHE) detail.operations_attempted |= JC_MEM_OP_SYSTEM_CACHE;
         if (operations_mask & JC_MEM_OP_STANDBY_LIST) detail.operations_attempted |= JC_MEM_OP_STANDBY_LIST;
+        if (operations_mask & JC_MEM_OP_STANDBY_LOW_PRIORITY) detail.operations_attempted |= JC_MEM_OP_STANDBY_LOW_PRIORITY;
 
         if (geteuid() == 0) {
             sync(); // Flush dirty pages to disk first
@@ -40,13 +43,16 @@ jc_status_t execute_platform_memory_clean(
                 drop_file.close();
                 if (operations_mask & JC_MEM_OP_SYSTEM_CACHE) detail.operations_succeeded |= JC_MEM_OP_SYSTEM_CACHE;
                 if (operations_mask & JC_MEM_OP_STANDBY_LIST) detail.operations_succeeded |= JC_MEM_OP_STANDBY_LIST;
+                if (operations_mask & JC_MEM_OP_STANDBY_LOW_PRIORITY) detail.operations_succeeded |= JC_MEM_OP_STANDBY_LOW_PRIORITY;
             } else {
                 if (operations_mask & JC_MEM_OP_SYSTEM_CACHE) detail.operations_failed |= JC_MEM_OP_SYSTEM_CACHE;
                 if (operations_mask & JC_MEM_OP_STANDBY_LIST) detail.operations_failed |= JC_MEM_OP_STANDBY_LIST;
+                if (operations_mask & JC_MEM_OP_STANDBY_LOW_PRIORITY) detail.operations_failed |= JC_MEM_OP_STANDBY_LOW_PRIORITY;
             }
         } else {
             if (operations_mask & JC_MEM_OP_SYSTEM_CACHE) detail.operations_failed |= JC_MEM_OP_SYSTEM_CACHE;
             if (operations_mask & JC_MEM_OP_STANDBY_LIST) detail.operations_failed |= JC_MEM_OP_STANDBY_LIST;
+            if (operations_mask & JC_MEM_OP_STANDBY_LOW_PRIORITY) detail.operations_failed |= JC_MEM_OP_STANDBY_LOW_PRIORITY;
         }
     }
 
@@ -55,6 +61,25 @@ jc_status_t execute_platform_memory_clean(
         detail.operations_attempted |= JC_MEM_OP_MODIFIED_LIST;
         sync();
         detail.operations_succeeded |= JC_MEM_OP_MODIFIED_LIST;
+    }
+
+    // 5. Modified File Cache: On Linux sync() flushes dirty buffers
+    if (operations_mask & JC_MEM_OP_MODIFIED_FILE_CACHE) {
+        detail.operations_attempted |= JC_MEM_OP_MODIFIED_FILE_CACHE;
+        sync();
+        detail.operations_succeeded |= JC_MEM_OP_MODIFIED_FILE_CACHE;
+    }
+
+    // 6. Combined Page List: Explicitly unsupported on Linux
+    if (operations_mask & JC_MEM_OP_COMBINED_LIST) {
+        detail.operations_attempted |= JC_MEM_OP_COMBINED_LIST;
+        detail.operations_failed |= JC_MEM_OP_COMBINED_LIST;
+    }
+
+    // 7. Registry Cache: Windows-only concept
+    if (operations_mask & JC_MEM_OP_REGISTRY_CACHE) {
+        detail.operations_attempted |= JC_MEM_OP_REGISTRY_CACHE;
+        detail.operations_failed |= JC_MEM_OP_REGISTRY_CACHE;
     }
 
     if (detail.operations_succeeded == detail.operations_attempted) {
