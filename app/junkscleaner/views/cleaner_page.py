@@ -75,7 +75,7 @@ class CleanerPage(QWidget):
         # Progress bar (indeterminate)
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 0)
-        self.progress_bar.setFixedHeight(3)
+        self.progress_bar.setFixedHeight(4)
         self.progress_bar.hide()
         layout.addWidget(self.progress_bar)
 
@@ -115,7 +115,7 @@ class CleanerPage(QWidget):
         action_layout.addStretch()
 
         self.summary_label = QLabel("0 items selected (0 B)")
-        self.summary_label.setStyleSheet("font-weight: 600; font-size: 12px;")
+        self.summary_label.setStyleSheet("font-weight: 700; font-size: 13px;")
         action_layout.addWidget(self.summary_label)
 
         self.dry_run_btn = QPushButton("Dry Run")

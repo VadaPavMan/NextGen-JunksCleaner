@@ -58,7 +58,7 @@ class SettingsPage(QWidget):
 
         theme_row = QHBoxLayout()
         theme_label = QLabel("Visual Theme")
-        theme_label.setStyleSheet("font-weight: 500;")
+        theme_label.setStyleSheet("font-size: 14px; font-weight: 600;")
         theme_row.addWidget(theme_label)
         theme_row.addStretch()
 
@@ -88,7 +88,7 @@ class SettingsPage(QWidget):
 
         interval_row = QHBoxLayout()
         interval_label = QLabel("Telemetry Polling Interval")
-        interval_label.setStyleSheet("font-weight: 500;")
+        interval_label.setStyleSheet("font-size: 14px; font-weight: 600;")
         interval_row.addWidget(interval_label)
         interval_row.addStretch()
 

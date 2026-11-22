@@ -2,7 +2,8 @@
 
 Design language adapted from Pav Play: warm-toned neutrals, crimson accent
 used sparingly, left-edge active indicators, grouped content sections with
-clean typographic hierarchy. No gratuitous rounded corners or floating cards.
+clean typographic hierarchy. Bold, readable typography scaled for both
+windowed and full-screen desktop viewing.
 """
 
 # -- Shared design tokens (referenced in both themes) -------------------------
@@ -30,7 +31,7 @@ QMainWindow, QWidget#CentralWidget, QStackedWidget {
 
 QWidget {
     font-family: "Segoe UI", "SF Pro Display", -apple-system, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     color: #e8e6e3;
 }
 
@@ -75,27 +76,27 @@ QFrame#SidebarSeparator {
 }
 
 QLabel#AppTitle {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 17px;
+    font-weight: 800;
     color: #e8e6e3;
 }
 
 QLabel#SidebarSubtitle {
-    font-size: 10px;
+    font-size: 11px;
     color: #6b6966;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 QPushButton#NavButton {
     text-align: left;
-    padding: 9px 16px;
+    padding: 10px 16px;
     border: none;
     border-left: 3px solid transparent;
     border-radius: 0px;
     background-color: transparent;
     color: #9e9b98;
-    font-weight: 500;
-    font-size: 13px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 QPushButton#NavButton:hover {
@@ -106,7 +107,7 @@ QPushButton#NavButton:hover {
 QPushButton#NavButton:checked {
     background-color: #1f1e1c;
     color: #c0392b;
-    font-weight: 600;
+    font-weight: 700;
     border-left: 3px solid #c0392b;
 }
 
@@ -141,50 +142,51 @@ QFrame#SectionGroup {
 }
 
 QLabel#PageTitle {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     color: #e8e6e3;
 }
 
 QLabel#PageSubtitle {
-    font-size: 12px;
+    font-size: 13px;
     color: #8a8784;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 QLabel#SectionTitle {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     color: #c0392b;
 }
 
 QLabel#CardTitle {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     color: #8a8784;
     text-transform: uppercase;
     letter-spacing: 0.8px;
 }
 
 QLabel#MetricValue {
-    font-size: 26px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
     color: #e8e6e3;
 }
 
 QLabel#MetricSubtext {
-    font-size: 12px;
+    font-size: 13px;
     color: #8a8784;
+    font-weight: 500;
 }
 
 /* --- Buttons --- */
 QPushButton#PrimaryButton {
     background-color: #c0392b;
     color: #ffffff;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     border-radius: 6px;
-    padding: 8px 20px;
+    padding: 9px 22px;
     border: none;
 }
 
@@ -207,8 +209,9 @@ QPushButton#SecondaryButton {
     color: #c8c5c2;
     border: 1px solid #3d3b39;
     border-radius: 6px;
-    padding: 7px 16px;
-    font-weight: 500;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 QPushButton#SecondaryButton:hover {
@@ -220,10 +223,10 @@ QPushButton#SecondaryButton:hover {
 QPushButton#DangerButton {
     background-color: #c0392b;
     color: #ffffff;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     border-radius: 6px;
-    padding: 8px 20px;
+    padding: 9px 22px;
     border: none;
 }
 
@@ -240,18 +243,19 @@ QTableWidget, QTreeWidget, QListWidget {
     selection-background-color: #2a2827;
     selection-color: #e8e6e3;
     alternate-background-color: #232120;
+    font-size: 13px;
 }
 
 QHeaderView::section {
     background-color: #242220;
     color: #8a8784;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border: none;
     border-bottom: 1px solid #333130;
-    padding: 8px 12px;
+    padding: 10px 14px;
 }
 
 /* --- Progress bars --- */
@@ -261,8 +265,8 @@ QProgressBar {
     text-align: center;
     background-color: #2a2827;
     color: #e8e6e3;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 QProgressBar::chunk {
@@ -272,14 +276,15 @@ QProgressBar::chunk {
 
 /* --- Checkboxes --- */
 QCheckBox {
-    spacing: 8px;
+    spacing: 10px;
     color: #e8e6e3;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border: 2px solid #5a5856;
     border-radius: 3px;
     background-color: transparent;
@@ -299,9 +304,10 @@ QComboBox, QSpinBox, QDoubleSpinBox {
     background-color: #1f1e1c;
     border: 1px solid #3d3b39;
     border-radius: 4px;
-    padding: 6px 10px;
+    padding: 7px 12px;
     color: #e8e6e3;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 QComboBox:hover, QSpinBox:hover, QDoubleSpinBox:hover {
@@ -331,8 +337,8 @@ QGroupBox {
     border-radius: 8px;
     margin-top: 12px;
     padding: 16px 14px 14px 14px;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     color: #e8e6e3;
 }
 
@@ -356,48 +362,49 @@ QToolTip {
 /* --- Status bar label --- */
 QLabel#StatusLabel {
     color: #8a8784;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* --- Badge pills --- */
 QLabel#BadgeGreen {
     color: #27ae60;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #1a2e1f;
     border: 1px solid #27ae60;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 
 QLabel#BadgeAmber {
     color: #e67e22;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #2e2518;
     border: 1px solid #e67e22;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 
 QLabel#BadgeBlue {
     color: #2980b9;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #182530;
     border: 1px solid #2980b9;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 
 QLabel#BadgeMuted {
     color: #8a8784;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #242220;
     border: 1px solid #3d3b39;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 """
 
@@ -419,7 +426,7 @@ QMainWindow, QWidget#CentralWidget, QStackedWidget {
 
 QWidget {
     font-family: "Segoe UI", "SF Pro Display", -apple-system, sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     color: #2c2a26;
 }
 
@@ -464,27 +471,27 @@ QFrame#SidebarSeparator {
 }
 
 QLabel#AppTitle {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 17px;
+    font-weight: 800;
     color: #2c2a26;
 }
 
 QLabel#SidebarSubtitle {
-    font-size: 10px;
+    font-size: 11px;
     color: #8a8680;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 QPushButton#NavButton {
     text-align: left;
-    padding: 9px 16px;
+    padding: 10px 16px;
     border: none;
     border-left: 3px solid transparent;
     border-radius: 0px;
     background-color: transparent;
     color: #6b675f;
-    font-weight: 500;
-    font-size: 13px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 QPushButton#NavButton:hover {
@@ -495,7 +502,7 @@ QPushButton#NavButton:hover {
 QPushButton#NavButton:checked {
     background-color: #d8d5cc;
     color: #c0392b;
-    font-weight: 600;
+    font-weight: 700;
     border-left: 3px solid #c0392b;
 }
 
@@ -530,50 +537,51 @@ QFrame#SectionGroup {
 }
 
 QLabel#PageTitle {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     color: #2c2a26;
 }
 
 QLabel#PageSubtitle {
-    font-size: 12px;
+    font-size: 13px;
     color: #7a766e;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 QLabel#SectionTitle {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     color: #c0392b;
 }
 
 QLabel#CardTitle {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     color: #7a766e;
     text-transform: uppercase;
     letter-spacing: 0.8px;
 }
 
 QLabel#MetricValue {
-    font-size: 26px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
     color: #2c2a26;
 }
 
 QLabel#MetricSubtext {
-    font-size: 12px;
+    font-size: 13px;
     color: #7a766e;
+    font-weight: 500;
 }
 
 /* --- Buttons --- */
 QPushButton#PrimaryButton {
     background-color: #c0392b;
     color: #ffffff;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     border-radius: 6px;
-    padding: 8px 20px;
+    padding: 9px 22px;
     border: none;
 }
 
@@ -596,8 +604,9 @@ QPushButton#SecondaryButton {
     color: #4a4740;
     border: 1px solid #c5c1b8;
     border-radius: 6px;
-    padding: 7px 16px;
-    font-weight: 500;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 QPushButton#SecondaryButton:hover {
@@ -609,10 +618,10 @@ QPushButton#SecondaryButton:hover {
 QPushButton#DangerButton {
     background-color: #c0392b;
     color: #ffffff;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     border-radius: 6px;
-    padding: 8px 20px;
+    padding: 9px 22px;
     border: none;
 }
 
@@ -629,18 +638,19 @@ QTableWidget, QTreeWidget, QListWidget {
     selection-background-color: #e0ded4;
     selection-color: #2c2a26;
     alternate-background-color: #f0eee6;
+    font-size: 13px;
 }
 
 QHeaderView::section {
     background-color: #eae8df;
     color: #7a766e;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border: none;
     border-bottom: 1px solid #d5d1c4;
-    padding: 8px 12px;
+    padding: 10px 14px;
 }
 
 /* --- Progress bars --- */
@@ -650,8 +660,8 @@ QProgressBar {
     text-align: center;
     background-color: #dcd8cc;
     color: #2c2a26;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 QProgressBar::chunk {
@@ -661,14 +671,15 @@ QProgressBar::chunk {
 
 /* --- Checkboxes --- */
 QCheckBox {
-    spacing: 8px;
+    spacing: 10px;
     color: #2c2a26;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border: 2px solid #b5b0a2;
     border-radius: 3px;
     background-color: #ffffff;
@@ -688,9 +699,10 @@ QComboBox, QSpinBox, QDoubleSpinBox {
     background-color: #ffffff;
     border: 1px solid #c5c1b8;
     border-radius: 4px;
-    padding: 6px 10px;
+    padding: 7px 12px;
     color: #2c2a26;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 13px;
 }
 
 QComboBox:hover, QSpinBox:hover, QDoubleSpinBox:hover {
@@ -720,8 +732,8 @@ QGroupBox {
     border-radius: 8px;
     margin-top: 12px;
     padding: 16px 14px 14px 14px;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 700;
+    font-size: 14px;
     color: #2c2a26;
 }
 
@@ -745,48 +757,49 @@ QToolTip {
 /* --- Status bar label --- */
 QLabel#StatusLabel {
     color: #7a766e;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* --- Badge pills --- */
 QLabel#BadgeGreen {
     color: #27ae60;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #e8f5ec;
     border: 1px solid #27ae60;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 
 QLabel#BadgeAmber {
     color: #e67e22;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #fdf0e0;
     border: 1px solid #e67e22;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 
 QLabel#BadgeBlue {
     color: #2980b9;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #e0f0fb;
     border: 1px solid #2980b9;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 
 QLabel#BadgeMuted {
     color: #7a766e;
-    font-weight: 600;
-    font-size: 11px;
+    font-weight: 700;
+    font-size: 12px;
     background-color: #eae8df;
     border: 1px solid #c5c1b8;
-    padding: 3px 10px;
-    border-radius: 10px;
+    padding: 4px 12px;
+    border-radius: 11px;
 }
 """
 

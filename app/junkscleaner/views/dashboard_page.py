@@ -47,7 +47,7 @@ class MetricCard(QFrame):
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setFixedHeight(6)
+        self.progress_bar.setFixedHeight(8)
         self.progress_bar.hide()
         layout.addWidget(self.progress_bar)
 

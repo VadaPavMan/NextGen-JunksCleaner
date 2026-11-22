@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         # ── Sidebar ──────────────────────────────────────────────────
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        sidebar.setFixedWidth(200)
+        sidebar.setFixedWidth(225)
         sidebar_layout = QVBoxLayout(sidebar)
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
@@ -109,9 +109,9 @@ class MainWindow(QMainWindow):
         app_icon_pixmap = QPixmap(get_asset_path("appicon.png"))
         if not app_icon_pixmap.isNull():
             logo_label.setPixmap(
-                app_icon_pixmap.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                app_icon_pixmap.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             )
-        logo_label.setFixedSize(24, 24)
+        logo_label.setFixedSize(28, 28)
 
         brand_text = QVBoxLayout()
         brand_text.setSpacing(1)
@@ -167,11 +167,11 @@ class MainWindow(QMainWindow):
         status_line = QLabel("Native Core Active")
         status_line.setObjectName("BadgeGreen")
         status_line.setStyleSheet(
-            "color: #27ae60; font-size: 10px; font-weight: 600; "
+            "color: #27ae60; font-size: 11px; font-weight: 700; "
             "background: transparent; border: none; padding: 0;"
         )
         engine_line = QLabel("C ABI Engine v1.0.0")
-        engine_line.setStyleSheet("color: #5a5856; font-size: 10px;")
+        engine_line.setStyleSheet("color: #6b6966; font-size: 11px; font-weight: 500;")
 
         footer_layout.addWidget(status_line)
         footer_layout.addWidget(engine_line)
@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
         btn.setToolTip(label)
         icon_path = get_asset_path(icon_filename)
         btn.setIcon(QIcon(icon_path))
-        btn.setIconSize(QSize(18, 18))
+        btn.setIconSize(QSize(22, 22))
         btn.clicked.connect(lambda: self.stack.setCurrentIndex(index))
         self.nav_group.addButton(btn, index)
         return btn

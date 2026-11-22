@@ -84,13 +84,13 @@ class MemoryPage(QWidget):
         stats = QHBoxLayout()
         stats.setSpacing(20)
         self.lbl_used_ram = QLabel("Used: --")
-        self.lbl_used_ram.setStyleSheet("font-weight: 600;")
+        self.lbl_used_ram.setStyleSheet("font-size: 14px; font-weight: 700;")
         self.lbl_avail_ram = QLabel("Available: --")
-        self.lbl_avail_ram.setStyleSheet("font-weight: 500;")
+        self.lbl_avail_ram.setStyleSheet("font-size: 14px; font-weight: 600;")
         self.lbl_cached_ram = QLabel("Cached: --")
-        self.lbl_cached_ram.setStyleSheet("font-weight: 500;")
+        self.lbl_cached_ram.setStyleSheet("font-size: 14px; font-weight: 600;")
         self.lbl_total_ram = QLabel("Total: --")
-        self.lbl_total_ram.setObjectName("MetricSubtext")
+        self.lbl_total_ram.setStyleSheet("font-size: 14px; font-weight: 500;")
 
         stats.addWidget(self.lbl_used_ram)
         stats.addWidget(self.lbl_avail_ram)
@@ -103,7 +103,7 @@ class MemoryPage(QWidget):
         self.memory_progress.setRange(0, 100)
         self.memory_progress.setValue(0)
         self.memory_progress.setTextVisible(True)
-        self.memory_progress.setFixedHeight(14)
+        self.memory_progress.setFixedHeight(16)
         tl.addWidget(self.memory_progress)
 
         layout.addWidget(self.telemetry_card)
@@ -164,7 +164,7 @@ class MemoryPage(QWidget):
 
         self.btn_clean = QPushButton("Clean Selected Targets")
         self.btn_clean.setObjectName("PrimaryButton")
-        self.btn_clean.setFixedHeight(36)
+        self.btn_clean.setFixedHeight(38)
         self.btn_clean.clicked.connect(self._on_clean_clicked)
         action_row.addWidget(self.btn_clean)
 
@@ -187,7 +187,7 @@ class MemoryPage(QWidget):
         res_title = QLabel("OPTIMIZATION REPORT")
         res_title.setObjectName("CardTitle")
         res_title.setStyleSheet(
-            "font-size: 11px; font-weight: 600; color: #27ae60; "
+            "font-size: 12px; font-weight: 700; color: #27ae60; "
             "text-transform: uppercase; letter-spacing: 0.8px;"
         )
         rl.addWidget(res_title)
@@ -195,11 +195,11 @@ class MemoryPage(QWidget):
         metrics_row = QHBoxLayout()
         metrics_row.setSpacing(16)
         self.res_reclaimed_label = QLabel("Reclaimed: --")
-        self.res_reclaimed_label.setStyleSheet("font-size: 16px; font-weight: 700;")
+        self.res_reclaimed_label.setStyleSheet("font-size: 18px; font-weight: 800;")
         self.res_before_after = QLabel("Before: -- | After: --")
-        self.res_before_after.setObjectName("MetricSubtext")
+        self.res_before_after.setStyleSheet("font-size: 13px; font-weight: 500;")
         self.res_processes = QLabel("Trimmed: --")
-        self.res_processes.setObjectName("MetricSubtext")
+        self.res_processes.setStyleSheet("font-size: 13px; font-weight: 500;")
 
         metrics_row.addWidget(self.res_reclaimed_label)
         metrics_row.addWidget(self.res_before_after)
@@ -215,7 +215,7 @@ class MemoryPage(QWidget):
         """Build a single optimization target row card."""
         card = QFrame()
         card.setObjectName("OptionCard")
-        card.setMinimumHeight(64)
+        card.setMinimumHeight(68)
         card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         outer = QVBoxLayout(card)
